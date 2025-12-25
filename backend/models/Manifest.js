@@ -1,60 +1,89 @@
-// backend/models/Manifest.js
+
+// /home/claude/devops-dashboard/backend/models/Manifest.js
+
 const mongoose = require('mongoose');
 
+
+
 const manifestSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
+
   name: {
+
     type: String,
-    required: true,
-    trim: true
-  },
-  type: {
-    type: String,
-    required: true,
-    enum: ['docker', 'kubernetes', 'terraform', 'helm', 'argocd', 'ansible', 'jenkins', 'compose']
-  },
-  subType: {
-    type: String,
-    // For kubernetes: deployment, service, configmap, secret, ingress, etc.
-    // For terraform: main, variables, outputs, etc.
-  },
-  content: {
-    type: String,
+
     required: true
+
   },
-  parameters: {
-    type: mongoose.Schema.Types.Mixed,
-    default: {}
-  },
-  isCustom: {
-    type: Boolean,
-    default: false
-  },
-  tags: [{
-    type: String
-  }],
-  version: {
+
+  type: {
+
     type: String,
-    default: '1.0.0'
+
+    enum: ['docker', 'kubernetes', 'ansible', 'terraform'],
+
+    required: true
+
   },
-  lastModified: {
-    type: Date,
-    default: Date.now
+
+  content: {
+
+    type: String,
+
+    required: true
+
   },
+
+  description: {
+
+    type: String
+
+  },
+
+  tags: [{
+
+    type: String
+
+  }],
+
+  createdBy: {
+
+    type: mongoose.Schema.Types.ObjectId,
+
+    ref: 'User',
+
+    required: true
+
+  },
+
   createdAt: {
+
     type: Date,
+
     default: Date.now
+
+  },
+
+  updatedAt: {
+
+    type: Date,
+
+    default: Date.now
+
   }
-}, {
-  timestamps: true
+
 });
 
-// Index for faster queries
-manifestSchema.index({ userId: 1, type: 1 });
-manifestSchema.index({ userId: 1, name: 1 });
+
+
+manifestSchema.pre('save', function(next) {
+
+  this.updatedAt = Date.now();
+
+  next();
+
+});
+
+
 
 module.exports = mongoose.model('Manifest', manifestSchema);
+

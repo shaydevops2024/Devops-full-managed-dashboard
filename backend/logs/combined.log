@@ -1,2 +1,80 @@
-{"level":"info","message":"Server running on port 5000","service":"devops-platform","timestamp":"2025-12-24 15:49:01"}
-{"level":"info","message":"MongoDB connected successfully","service":"devops-platform","timestamp":"2025-12-24 15:49:01"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-24T20:14:03.432Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-24T20:14:03.449Z"}
+{"level":"info","message":"New user registered: test@test.com","timestamp":"2025-12-24T20:14:37.606Z"}
+{"level":"info","message":"User logged in: test@test.com","timestamp":"2025-12-24T20:16:20.662Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-25T06:00:40.257Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-25T06:00:40.259Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-25T06:00:40.292Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-25T06:09:07.951Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-25T06:09:07.955Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-25T06:09:07.990Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-25T06:12:40.413Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-25T06:12:40.415Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-25T06:12:40.441Z"}
+{"level":"info","message":"New user registered: test@test.com","timestamp":"2025-12-25T06:15:04.760Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-25T06:20:15.330Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-25T06:20:15.334Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-25T06:20:15.366Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-25T06:27:18.542Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-25T06:27:18.544Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-25T06:27:18.575Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-25T06:30:58.338Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-25T06:30:58.340Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-25T06:30:58.357Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-25T06:34:26.432Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-25T06:34:26.435Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-25T06:34:26.451Z"}
+{"level":"info","message":"Tool check: docker - Installed: true, Version: 28.0.1","timestamp":"2025-12-25T06:34:46.803Z"}
+{"level":"info","message":"Tool check: terraform - Installed: true, Version: Terraform v1.12.2","timestamp":"2025-12-25T06:34:48.005Z"}
+{"level":"info","message":"Tool check: kubectl - Installed: false, Version: null","timestamp":"2025-12-25T06:34:48.609Z"}
+{"level":"info","message":"Tool check: helm - Installed: true, Version: v3.17.1+g980d8ac","timestamp":"2025-12-25T06:34:51.879Z"}
+{"level":"info","message":"Tool check: argocd - Installed: true, Version: argocd: v3.0.11+240a183","timestamp":"2025-12-25T06:34:52.479Z"}
+{"level":"info","message":"Tool check: ansible - Installed: true, Version: null","timestamp":"2025-12-25T06:34:53.045Z"}
+{"level":"info","message":"Tool check: kubectl - Installed: false, Version: null","timestamp":"2025-12-25T06:35:00.508Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-25T06:40:57.635Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-25T06:40:57.640Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-25T06:40:57.665Z"}
+{"level":"info","message":"Checking tool: docker","timestamp":"2025-12-25T06:41:00.971Z"}
+{"level":"info","message":"Tool check result: docker - Installed: true, Version: 28.0.1","timestamp":"2025-12-25T06:41:00.982Z"}
+{"level":"info","message":"Checking tool: terraform","timestamp":"2025-12-25T06:41:01.782Z"}
+{"level":"info","message":"Found terraform at /host/usr/bin/terraform","timestamp":"2025-12-25T06:41:01.783Z"}
+{"level":"info","message":"Got version for terraform from /host/usr/bin/terraform: Terraform v1.12.2","timestamp":"2025-12-25T06:41:02.096Z"}
+{"level":"info","message":"Tool check result: terraform - Installed: true, Version: Terraform v1.12.2","timestamp":"2025-12-25T06:41:02.097Z"}
+{"level":"info","message":"Checking tool: kubectl","timestamp":"2025-12-25T06:41:02.815Z"}
+{"level":"warn","message":"kubectl not found in any standard path","timestamp":"2025-12-25T06:41:02.816Z"}
+{"level":"info","message":"Tool check result: kubectl - Installed: false, Version: null","timestamp":"2025-12-25T06:41:02.816Z"}
+{"level":"info","message":"Checking tool: kubectl","timestamp":"2025-12-25T06:41:05.488Z"}
+{"level":"warn","message":"kubectl not found in any standard path","timestamp":"2025-12-25T06:41:05.489Z"}
+{"level":"info","message":"Tool check result: kubectl - Installed: false, Version: null","timestamp":"2025-12-25T06:41:05.490Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-25T06:44:47.772Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-25T06:44:47.775Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-25T06:44:47.791Z"}
+{"level":"info","message":"Checking tool: docker","timestamp":"2025-12-25T06:45:08.206Z"}
+{"level":"info","message":"Tool check result: docker - Installed: true, Version: 28.0.1","timestamp":"2025-12-25T06:45:08.219Z"}
+{"level":"info","message":"Checking tool: terraform","timestamp":"2025-12-25T06:45:08.954Z"}
+{"level":"info","message":"Found terraform at /host/usr/bin/terraform","timestamp":"2025-12-25T06:45:08.955Z"}
+{"level":"info","message":"Got version for terraform from /host/usr/bin/terraform: Terraform v1.12.2","timestamp":"2025-12-25T06:45:09.260Z"}
+{"level":"info","message":"Tool check result: terraform - Installed: true, Version: Terraform v1.12.2","timestamp":"2025-12-25T06:45:09.260Z"}
+{"level":"info","message":"Checking tool: kubectl","timestamp":"2025-12-25T06:45:10.448Z"}
+{"level":"info","message":"Found minikube at /host/usr/local/bin/minikube, using for kubectl","timestamp":"2025-12-25T06:45:10.449Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: ENOENT: no such file or directory, access '/host/snap/bin/minikube'","timestamp":"2025-12-25T06:45:10.450Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: Command failed: /host/usr/local/bin/minikube version --short 2>&1\n","timestamp":"2025-12-25T06:45:10.455Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: ENOENT: no such file or directory, access '/host/usr/bin/minikube'","timestamp":"2025-12-25T06:45:10.456Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: ENOENT: no such file or directory, access '/host/bin/minikube'","timestamp":"2025-12-25T06:45:10.456Z"}
+{"level":"info","message":"Tool check result: kubectl - Installed: true, Version: null","timestamp":"2025-12-25T06:45:10.457Z"}
+{"level":"info","message":"Checking tool: helm","timestamp":"2025-12-25T06:45:13.153Z"}
+{"level":"info","message":"Found helm at /host/usr/local/bin/helm","timestamp":"2025-12-25T06:45:13.154Z"}
+{"level":"info","message":"Got version for helm from /host/usr/local/bin/helm: v3.17.1+g980d8ac","timestamp":"2025-12-25T06:45:13.204Z"}
+{"level":"info","message":"Tool check result: helm - Installed: true, Version: v3.17.1+g980d8ac","timestamp":"2025-12-25T06:45:13.204Z"}
+{"level":"info","message":"Checking tool: argocd","timestamp":"2025-12-25T06:45:14.199Z"}
+{"level":"info","message":"Found argocd at /host/usr/local/bin/argocd","timestamp":"2025-12-25T06:45:14.199Z"}
+{"level":"info","message":"Got version for argocd from /host/usr/local/bin/argocd: argocd: v3.0.11+240a183","timestamp":"2025-12-25T06:45:14.272Z"}
+{"level":"info","message":"Tool check result: argocd - Installed: true, Version: argocd: v3.0.11+240a183","timestamp":"2025-12-25T06:45:14.273Z"}
+{"level":"info","message":"Checking tool: ansible","timestamp":"2025-12-25T06:45:15.979Z"}
+{"level":"info","message":"Found ansible at /host/usr/bin/ansible","timestamp":"2025-12-25T06:45:15.981Z"}
+{"level":"info","message":"Got version for ansible from /host/usr/bin/ansible: /bin/sh: /host/usr/bin/ansible: not found","timestamp":"2025-12-25T06:45:15.985Z"}
+{"level":"info","message":"Tool check result: ansible - Installed: true, Version: /bin/sh: /host/usr/bin/ansible: not found","timestamp":"2025-12-25T06:45:15.985Z"}
+{"level":"info","message":"Checking tool: jenkins","timestamp":"2025-12-25T06:45:17.498Z"}
+{"level":"warn","message":"jenkins not found in any standard path","timestamp":"2025-12-25T06:45:17.499Z"}
+{"level":"info","message":"Tool check result: jenkins - Installed: false, Version: null","timestamp":"2025-12-25T06:45:17.500Z"}
+{"level":"info","message":"Container stopped: bebe58ef4bee8ee52b63d363bc385b66d3a92a78bb77611f0a4b01ce43d86012","timestamp":"2025-12-25T06:45:42.314Z"}

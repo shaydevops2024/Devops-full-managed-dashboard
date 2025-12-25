@@ -1,49 +1,83 @@
-// backend/models/File.js
+
+// /home/claude/devops-dashboard/backend/models/File.js
+
 const mongoose = require('mongoose');
 
+
+
 const fileSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
+
   filename: {
+
     type: String,
+
     required: true
+
   },
+
   originalName: {
+
     type: String,
+
     required: true
+
   },
+
   path: {
+
     type: String,
+
     required: true
+
   },
+
   size: {
+
     type: Number,
+
     required: true
+
   },
-  mimetype: {
+
+  mimeType: {
+
     type: String,
+
     required: true
+
   },
+
   type: {
+
     type: String,
-    enum: ['docker', 'kubernetes', 'terraform', 'helm', 'argocd', 'ansible', 'jenkins', 'other'],
+
+    enum: ['docker', 'kubernetes', 'ansible', 'terraform', 'other'],
+
     default: 'other'
+
   },
-  content: {
-    type: String
+
+  uploadedBy: {
+
+    type: mongoose.Schema.Types.ObjectId,
+
+    ref: 'User',
+
+    required: true
+
   },
-  uploadedAt: {
+
+  createdAt: {
+
     type: Date,
+
     default: Date.now
+
   }
-}, {
-  timestamps: true
+
 });
 
-// Index for faster queries
-fileSchema.index({ userId: 1 });
+
 
 module.exports = mongoose.model('File', fileSchema);
+

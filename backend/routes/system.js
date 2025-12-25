@@ -1,58 +1,217 @@
-// backend/routes/system.js
+
+// /home/claude/devops-dashboard/backend/routes/system.js
+
 const express = require('express');
+
 const router = express.Router();
-const { auth } = require('../middleware/auth');
-const systemExecutor = require('../utils/systemExecutor');
+
+const si = require('systeminformation');
+
+const { exec } = require('child_process');
+
+const { promisify } = require('util');
+
+const { auth, adminAuth } = require('../middleware/auth');
+
 const logger = require('../utils/logger');
 
-// Get system information
+
+
+const execAsync = promisify(exec);
+
+
+
 router.get('/info', auth, async (req, res) => {
+
   try {
-    const info = await systemExecutor.getSystemInfo();
-    res.json(info);
+
+    const [cpu, mem, osInfo, disk, network] = await Promise.all([
+
+      si.cpu(),
+
+      si.mem(),
+
+      si.osInfo(),
+
+      si.fsSize(),
+
+      si.networkStats()
+
+    ]);
+
+
+
+    res.json({
+
+      cpu: {
+
+        manufacturer: cpu.manufacturer,
+
+        brand: cpu.brand,
+
+        cores: cpu.cores,
+
+        speed: cpu.speed
+
+      },
+
+      memory: {
+
+        total: mem.total,
+
+        free: mem.free,
+
+        used: mem.used,
+
+        active: mem.active
+
+      },
+
+      os: {
+
+        platform: osInfo.platform,
+
+        distro: osInfo.distro,
+
+        release: osInfo.release,
+
+        arch: osInfo.arch
+
+      },
+
+      disk: disk.map(d => ({
+
+        fs: d.fs,
+
+        type: d.type,
+
+        size: d.size,
+
+        used: d.used,
+
+        available: d.available,
+
+        use: d.use
+
+      })),
+
+      network: network.map(n => ({
+
+        iface: n.iface,
+
+        rx_sec: n.rx_sec,
+
+        tx_sec: n.tx_sec
+
+      }))
+
+    });
+
   } catch (error) {
-    logger.error('Get system info error:', error);
-    res.status(500).json({ error: 'Failed to get system information' });
+
+    logger.error('System info error:', error);
+
+    res.status(500).json({ error: 'Failed to fetch system info' });
+
   }
+
 });
 
-// Execute custom command (admin only for security)
-router.post('/execute', auth, async (req, res) => {
+
+
+router.post('/execute', adminAuth, async (req, res) => {
+
   try {
-    // Only allow for admin users in production
-    if (process.env.NODE_ENV === 'production' && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Admin access required' });
-    }
 
     const { command } = req.body;
+
+
+
     if (!command) {
+
       return res.status(400).json({ error: 'Command is required' });
+
     }
 
-    const result = await systemExecutor.executeCommand(command);
-    logger.info(`Command executed: ${command} by ${req.user.username}`);
-    res.json(result);
+
+
+    const allowedCommands = ['docker', 'kubectl', 'ansible', 'terraform'];
+
+    const commandBase = command.split(' ')[0];
+
+
+
+    if (!allowedCommands.includes(commandBase)) {
+
+      return res.status(403).json({ error: 'Command not allowed' });
+
+    }
+
+
+
+    const { stdout, stderr } = await execAsync(command, { timeout: 30000 });
+
+
+
+    logger.info(`Command executed: ${command}`);
+
+
+
+    res.json({
+
+      success: true,
+
+      stdout,
+
+      stderr
+
+    });
+
   } catch (error) {
-    logger.error('Execute command error:', error);
-    res.status(500).json({ error: 'Failed to execute command' });
+
+    logger.error('Command execution error:', error);
+
+    res.status(500).json({
+
+      success: false,
+
+      error: error.message,
+
+      stderr: error.stderr
+
+    });
+
   }
+
 });
 
-// Check hosts file
+
+
 router.get('/hosts', auth, async (req, res) => {
+
   try {
-    const hostsPath = process.env.HOSTS_FILE_PATH || '/etc/hosts';
-    const result = await systemExecutor.executeCommand(`cat ${hostsPath}`);
-    
-    if (result.success) {
-      res.json({ content: result.output });
-    } else {
-      res.status(500).json({ error: 'Failed to read hosts file' });
-    }
+
+    const hosts = [
+
+      { name: 'localhost', ip: '127.0.0.1', status: 'active' }
+
+    ];
+
+
+
+    res.json({ hosts });
+
   } catch (error) {
-    logger.error('Read hosts file error:', error);
-    res.status(500).json({ error: 'Failed to read hosts file' });
+
+    logger.error('Get hosts error:', error);
+
+    res.status(500).json({ error: 'Failed to fetch hosts' });
+
   }
+
 });
+
+
 
 module.exports = router;
+
