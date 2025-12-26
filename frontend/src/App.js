@@ -1,4 +1,3 @@
-
 // /home/claude/devops-dashboard/frontend/src/App.js
 
 import React from 'react';
@@ -14,6 +13,20 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 
 import Dashboard from './pages/Dashboard';
+
+import FileGenerator from './pages/FileGenerator';
+
+import DockerGenerator from './pages/tools/DockerGenerator';
+
+import TerraformGenerator from './pages/tools/TerraformGenerator';
+
+import KubernetesGenerator from './pages/tools/KubernetesGenerator';
+
+import HelmGenerator from './pages/tools/HelmGenerator';
+
+import ArgoCDGenerator from './pages/tools/ArgoCDGenerator';
+
+import JenkinsGenerator from './pages/tools/JenkinsGenerator';
 
 
 
@@ -91,6 +104,134 @@ function App() {
 
           />
 
+          <Route
+
+            path="/dashboard"
+
+            element={
+
+              <PrivateRoute>
+
+                <Dashboard />
+
+              </PrivateRoute>
+
+            }
+
+          />
+
+          <Route
+
+            path="/files"
+
+            element={
+
+              <PrivateRoute>
+
+                <FileGenerator />
+
+              </PrivateRoute>
+
+            }
+
+          />
+
+          <Route
+
+            path="/files/docker"
+
+            element={
+
+              <PrivateRoute>
+
+                <DockerGenerator />
+
+              </PrivateRoute>
+
+            }
+
+          />
+
+          <Route
+
+            path="/files/terraform"
+
+            element={
+
+              <PrivateRoute>
+
+                <TerraformGenerator />
+
+              </PrivateRoute>
+
+            }
+
+          />
+
+          <Route
+
+            path="/files/kubernetes"
+
+            element={
+
+              <PrivateRoute>
+
+                <KubernetesGenerator />
+
+              </PrivateRoute>
+
+            }
+
+          />
+
+          <Route
+
+            path="/files/helm"
+
+            element={
+
+              <PrivateRoute>
+
+                <HelmGenerator />
+
+              </PrivateRoute>
+
+            }
+
+          />
+
+          <Route
+
+            path="/files/argocd"
+
+            element={
+
+              <PrivateRoute>
+
+                <ArgoCDGenerator />
+
+              </PrivateRoute>
+
+            }
+
+          />
+
+          <Route
+
+            path="/files/jenkins"
+
+            element={
+
+              <PrivateRoute>
+
+                <JenkinsGenerator />
+
+              </PrivateRoute>
+
+            }
+
+          />
+
         </Routes>
 
       </Router>
@@ -104,4 +245,3 @@ function App() {
 
 
 export default App;
-

@@ -1,7 +1,8 @@
-
 // /home/shayg/open-source-contribute/Devops-full-managed-dashboard/frontend/src/pages/Dashboard.js
 
 import React, { useState, useEffect } from 'react';
+
+import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -21,7 +22,9 @@ import {
 
   XCircle,
 
-  AlertCircle
+  AlertCircle,
+
+  FileCode
 
 } from 'lucide-react';
 
@@ -51,6 +54,8 @@ const TOOLS = [
 
 function Dashboard() {
 
+  const navigate = useNavigate();
+
   const { user, logout } = useAuth();
 
   const [containers, setContainers] = useState([]);
@@ -64,6 +69,8 @@ function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
 
   const [lastRefresh, setLastRefresh] = useState(new Date());
+
+  const [actionInProgress, setActionInProgress] = useState({});
 
 
 
@@ -123,17 +130,49 @@ function Dashboard() {
 
   const handleStart = async (container) => {
 
+    setActionInProgress(prev => ({ ...prev, [container.id]: 'starting' }));
+
+    
+
     try {
 
       await dockerAPI.startContainer(container.id);
 
       toast.success(`Started ${container.name}`);
 
-      loadContainers();
+      
+
+      // Wait for Docker to update the container state before refreshing
+
+      setTimeout(() => {
+
+        loadContainers();
+
+        setActionInProgress(prev => {
+
+          const newState = { ...prev };
+
+          delete newState[container.id];
+
+          return newState;
+
+        });
+
+      }, 1500);
 
     } catch (error) {
 
       toast.error(`Failed to start ${container.name}: ${error.response?.data?.error || error.message}`);
+
+      setActionInProgress(prev => {
+
+        const newState = { ...prev };
+
+        delete newState[container.id];
+
+        return newState;
+
+      });
 
     }
 
@@ -143,17 +182,49 @@ function Dashboard() {
 
   const handleStop = async (container) => {
 
+    setActionInProgress(prev => ({ ...prev, [container.id]: 'stopping' }));
+
+    
+
     try {
 
       await dockerAPI.stopContainer(container.id);
 
       toast.success(`Stopped ${container.name}`);
 
-      loadContainers();
+      
+
+      // Wait for Docker to update the container state before refreshing
+
+      setTimeout(() => {
+
+        loadContainers();
+
+        setActionInProgress(prev => {
+
+          const newState = { ...prev };
+
+          delete newState[container.id];
+
+          return newState;
+
+        });
+
+      }, 1500);
 
     } catch (error) {
 
       toast.error(`Failed to stop ${container.name}: ${error.response?.data?.error || error.message}`);
+
+      setActionInProgress(prev => {
+
+        const newState = { ...prev };
+
+        delete newState[container.id];
+
+        return newState;
+
+      });
 
     }
 
@@ -423,85 +494,189 @@ function Dashboard() {
 
         borderRight: '2px solid #0f3460',
 
-        overflowY: 'auto'
+        overflowY: 'auto',
+
+        display: 'flex',
+
+        flexDirection: 'column'
 
       }}>
 
         <h2 style={{ marginBottom: '20px', color: '#e94560' }}>DevOps Tools</h2>
 
-        <p style={{ fontSize: '0.85rem', color: '#aaa', marginBottom: '20px' }}>
-
-          Click to check installation status
-
-        </p>
-
         
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
 
-          {TOOLS.map(tool => (
+          {TOOLS.map(tool => {
 
-            <button
+            const isChecked = toolsStatus[tool.name];
 
-              key={tool.name}
+            const isChecking = checkingTools[tool.name];
 
-              onClick={() => checkTool(tool.name)}
+            
 
-              disabled={checkingTools[tool.name]}
+            return (
 
-              style={{
+              <button
 
-                padding: '12px',
+                key={tool.name}
 
-                background: toolsStatus[tool.name] === true ? '#0f3460' : 
+                onClick={() => checkTool(tool.name)}
 
-                           toolsStatus[tool.name] === false ? '#2d1e2f' : '#1a1a2e',
+                disabled={isChecking}
 
-                border: `1px solid ${toolsStatus[tool.name] === true ? '#4ecca3' : 
+                style={{
 
-                                    toolsStatus[tool.name] === false ? '#e74c3c' : '#333'}`,
+                  display: 'flex',
 
-                borderRadius: '6px',
+                  alignItems: 'center',
 
-                color: '#fff',
+                  justifyContent: 'space-between',
 
-                cursor: checkingTools[tool.name] ? 'wait' : 'pointer',
+                  padding: '12px 15px',
 
-                display: 'flex',
+                  background: '#0f3460',
 
-                alignItems: 'center',
+                  border: `2px solid ${isChecked === true ? '#4ecca3' : isChecked === false ? '#e74c3c' : '#555'}`,
 
-                justifyContent: 'space-between',
+                  borderRadius: '6px',
 
-                transition: 'all 0.2s'
+                  color: '#fff',
 
-              }}
+                  cursor: isChecking ? 'wait' : 'pointer',
 
-            >
+                  textAlign: 'left',
 
-              <span>{tool.displayName}</span>
+                  transition: 'all 0.3s ease'
 
-              {checkingTools[tool.name] ? (
+                }}
 
-                <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                onMouseEnter={(e) => {
 
-              ) : toolsStatus[tool.name] === true ? (
+                  if (!isChecking) {
 
-                <CheckCircle size={16} color="#4ecca3" />
+                    e.currentTarget.style.background = '#1a4d7a';
 
-              ) : toolsStatus[tool.name] === false ? (
+                    e.currentTarget.style.transform = 'translateX(5px)';
 
-                <XCircle size={16} color="#e74c3c" />
+                  }
 
-              ) : (
+                }}
 
-                <AlertCircle size={16} color="#aaa" />
+                onMouseLeave={(e) => {
 
-              )}
+                  e.currentTarget.style.background = '#0f3460';
 
-            </button>
+                  e.currentTarget.style.transform = 'translateX(0)';
 
-          ))}
+                }}
+
+              >
+
+                <span style={{ fontWeight: 'bold' }}>{tool.displayName}</span>
+
+                {isChecking ? (
+
+                  <RefreshCw size={18} style={{ animation: 'spin 1s linear infinite' }} />
+
+                ) : isChecked === true ? (
+
+                  <CheckCircle size={18} style={{ color: '#4ecca3' }} />
+
+                ) : isChecked === false ? (
+
+                  <XCircle size={18} style={{ color: '#e74c3c' }} />
+
+                ) : (
+
+                  <AlertCircle size={18} style={{ color: '#888' }} />
+
+                )}
+
+              </button>
+
+            );
+
+          })}
+
+        </div>
+
+
+
+        {/* File Generator Button */}
+
+        <div style={{ 
+
+          marginTop: 'auto', 
+
+          paddingTop: '20px', 
+
+          borderTop: '2px solid #0f3460' 
+
+        }}>
+
+          <button
+
+            onClick={() => navigate('/files')}
+
+            style={{
+
+              width: '100%',
+
+              padding: '15px',
+
+              background: 'linear-gradient(135deg, #4ecca3 0%, #2d98da 100%)',
+
+              border: 'none',
+
+              borderRadius: '8px',
+
+              color: '#fff',
+
+              cursor: 'pointer',
+
+              fontWeight: 'bold',
+
+              fontSize: '1rem',
+
+              display: 'flex',
+
+              alignItems: 'center',
+
+              justifyContent: 'center',
+
+              gap: '0.5rem',
+
+              transition: 'all 0.3s ease',
+
+              boxShadow: '0 4px 8px rgba(78, 204, 163, 0.3)'
+
+            }}
+
+            onMouseEnter={(e) => {
+
+              e.currentTarget.style.transform = 'translateY(-2px)';
+
+              e.currentTarget.style.boxShadow = '0 6px 12px rgba(78, 204, 163, 0.4)';
+
+            }}
+
+            onMouseLeave={(e) => {
+
+              e.currentTarget.style.transform = 'translateY(0)';
+
+              e.currentTarget.style.boxShadow = '0 4px 8px rgba(78, 204, 163, 0.3)';
+
+            }}
+
+          >
+
+            <FileCode size={20} />
+
+            File Generator
+
+          </button>
 
         </div>
 
@@ -511,9 +686,9 @@ function Dashboard() {
 
       {/* Main Content */}
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-        {/* Top Bar */}
+        {/* Top Navigation */}
 
         <nav style={{ 
 
@@ -531,17 +706,27 @@ function Dashboard() {
 
         }}>
 
-          <h1 style={{ margin: 0 }}>Docker Management Dashboard</h1>
+          <div>
+
+            <h1 style={{ margin: 0, color: '#4ecca3', fontSize: '1.5rem' }}>DevOps Dashboard</h1>
+
+            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', color: '#aaa' }}>
+
+              Welcome, {user?.username || 'User'}
+
+            </p>
+
+          </div>
+
+          
 
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
 
-            <span style={{ color: '#aaa', fontSize: '0.85rem' }}>
+            <span style={{ fontSize: '0.85rem', color: '#aaa' }}>
 
               Last refresh: {formatTime(lastRefresh)}
 
             </span>
-
-            <span style={{ color: '#aaa' }}>Welcome, {user?.username}</span>
 
             <button 
 
@@ -677,71 +862,99 @@ function Dashboard() {
 
             }}>
 
-              {containers.map(container => (
+              {containers.map(container => {
 
-                <div 
+                const isActionInProgress = actionInProgress[container.id];
 
-                  key={container.id}
+                const isStarting = isActionInProgress === 'starting';
 
-                  style={{ 
+                const isStopping = isActionInProgress === 'stopping';
 
-                    background: '#16213e', 
+                
 
-                    padding: '1.5rem', 
+                return (
 
-                    borderRadius: '8px',
+                  <div 
 
-                    border: `2px solid ${container.isRunning ? '#4ecca3' : '#666'}`,
+                    key={container.id}
 
-                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    style={{ 
 
-                    overflow: 'hidden'
+                      background: '#16213e', 
 
-                  }}
+                      padding: '1.5rem', 
 
-                  onMouseEnter={(e) => {
+                      borderRadius: '8px',
 
-                    e.currentTarget.style.transform = 'translateY(-4px)';
+                      border: `2px solid ${container.isRunning ? '#4ecca3' : '#666'}`,
 
-                    e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.3)';
+                      transition: 'transform 0.2s, box-shadow 0.2s',
 
-                  }}
+                      overflow: 'hidden'
 
-                  onMouseLeave={(e) => {
+                    }}
 
-                    e.currentTarget.style.transform = 'translateY(0)';
+                    onMouseEnter={(e) => {
 
-                    e.currentTarget.style.boxShadow = 'none';
+                      e.currentTarget.style.transform = 'translateY(-4px)';
 
-                  }}
+                      e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.3)';
 
-                >
+                    }}
 
-                  {/* Container Header */}
+                    onMouseLeave={(e) => {
 
-                  <div style={{ marginBottom: '1rem' }}>
+                      e.currentTarget.style.transform = 'translateY(0)';
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      e.currentTarget.style.boxShadow = 'none';
 
-                      <div style={{
+                    }}
 
-                        width: '12px',
+                  >
 
-                        height: '12px',
+                    {/* Container Header */}
 
-                        borderRadius: '50%',
+                    <div style={{ marginBottom: '1rem' }}>
 
-                        background: container.isRunning ? '#4ecca3' : '#e74c3c',
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
 
-                        flexShrink: 0
+                        <div style={{
 
-                      }} />
+                          width: '12px',
 
-                      <h3 style={{ 
+                          height: '12px',
 
-                        margin: 0, 
+                          borderRadius: '50%',
 
-                        fontSize: '1.1rem',
+                          background: container.isRunning ? '#4ecca3' : '#e74c3c',
+
+                          flexShrink: 0
+
+                        }} />
+
+                        <h3 style={{ 
+
+                          margin: 0, 
+
+                          fontSize: '1.1rem',
+
+                          overflow: 'hidden',
+
+                          textOverflow: 'ellipsis',
+
+                          whiteSpace: 'nowrap'
+
+                        }}>{container.name}</h3>
+
+                      </div>
+
+                      <p style={{ 
+
+                        margin: '0.25rem 0', 
+
+                        fontSize: '0.85rem', 
+
+                        color: '#aaa',
 
                         overflow: 'hidden',
 
@@ -749,213 +962,213 @@ function Dashboard() {
 
                         whiteSpace: 'nowrap'
 
-                      }}>{container.name}</h3>
+                      }}>
+
+                        ID: {container.shortId}
+
+                      </p>
+
+                      <p style={{ 
+
+                        margin: '0.25rem 0', 
+
+                        fontSize: '0.85rem', 
+
+                        color: '#aaa',
+
+                        overflow: 'hidden',
+
+                        textOverflow: 'ellipsis',
+
+                        whiteSpace: 'nowrap',
+
+                        wordBreak: 'break-all'
+
+                      }} title={container.image}>
+
+                        Image: {container.image}
+
+                      </p>
+
+                      <p style={{ 
+
+                        margin: '0.25rem 0', 
+
+                        fontSize: '0.85rem', 
+
+                        color: container.isRunning ? '#4ecca3' : '#e74c3c',
+
+                        overflow: 'hidden',
+
+                        textOverflow: 'ellipsis',
+
+                        whiteSpace: 'nowrap'
+
+                      }}>
+
+                        Status: {container.status}
+
+                      </p>
 
                     </div>
 
-                    <p style={{ 
 
-                      margin: '0.25rem 0', 
 
-                      fontSize: '0.85rem', 
+                    {/* Action Buttons */}
 
-                      color: '#aaa',
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
 
-                      overflow: 'hidden',
+                      <button
 
-                      textOverflow: 'ellipsis',
+                        onClick={() => handleStart(container)}
 
-                      whiteSpace: 'nowrap'
+                        disabled={container.isRunning || isActionInProgress}
 
-                    }}>
+                        style={{
 
-                      ID: {container.shortId}
+                          flex: 1,
 
-                    </p>
+                          padding: '0.75rem',
 
-                    <p style={{ 
+                          background: (container.isRunning || isActionInProgress) ? '#333' : '#4ecca3',
 
-                      margin: '0.25rem 0', 
+                          border: 'none',
 
-                      fontSize: '0.85rem', 
+                          borderRadius: '4px',
 
-                      color: '#aaa',
+                          color: (container.isRunning || isActionInProgress) ? '#666' : '#1a1a2e',
 
-                      overflow: 'hidden',
+                          cursor: (container.isRunning || isActionInProgress) ? 'not-allowed' : 'pointer',
 
-                      textOverflow: 'ellipsis',
+                          fontWeight: 'bold',
 
-                      whiteSpace: 'nowrap',
+                          display: 'flex',
 
-                      wordBreak: 'break-all'
+                          alignItems: 'center',
 
-                    }} title={container.image}>
+                          justifyContent: 'center',
 
-                      Image: {container.image}
+                          gap: '0.5rem'
 
-                    </p>
+                        }}
 
-                    <p style={{ 
+                      >
 
-                      margin: '0.25rem 0', 
+                        {isStarting ? (
 
-                      fontSize: '0.85rem', 
+                          <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} />
 
-                      color: container.isRunning ? '#4ecca3' : '#e74c3c',
+                        ) : (
 
-                      overflow: 'hidden',
+                          <Play size={16} />
 
-                      textOverflow: 'ellipsis',
+                        )}
 
-                      whiteSpace: 'nowrap'
+                        {isStarting ? 'Starting...' : 'Start'}
 
-                    }}>
+                      </button>
 
-                      Status: {container.status}
+                      
 
-                    </p>
+                      <button
+
+                        onClick={() => handleStop(container)}
+
+                        disabled={!container.isRunning || isActionInProgress}
+
+                        style={{
+
+                          flex: 1,
+
+                          padding: '0.75rem',
+
+                          background: (!container.isRunning || isActionInProgress) ? '#333' : '#e94560',
+
+                          border: 'none',
+
+                          borderRadius: '4px',
+
+                          color: (!container.isRunning || isActionInProgress) ? '#666' : '#fff',
+
+                          cursor: (!container.isRunning || isActionInProgress) ? 'not-allowed' : 'pointer',
+
+                          fontWeight: 'bold',
+
+                          display: 'flex',
+
+                          alignItems: 'center',
+
+                          justifyContent: 'center',
+
+                          gap: '0.5rem'
+
+                        }}
+
+                      >
+
+                        {isStopping ? (
+
+                          <RefreshCw size={16} style={{ animation: 'spin 1s linear infinite' }} />
+
+                        ) : (
+
+                          <Square size={16} />
+
+                        )}
+
+                        {isStopping ? 'Stopping...' : 'Stop'}
+
+                      </button>
+
+                      
+
+                      <button
+
+                        onClick={() => handleLogs(container)}
+
+                        style={{
+
+                          flex: 1,
+
+                          padding: '0.75rem',
+
+                          background: '#6c5ce7',
+
+                          border: 'none',
+
+                          borderRadius: '4px',
+
+                          color: '#fff',
+
+                          cursor: 'pointer',
+
+                          fontWeight: 'bold',
+
+                          display: 'flex',
+
+                          alignItems: 'center',
+
+                          justifyContent: 'center',
+
+                          gap: '0.5rem'
+
+                        }}
+
+                      >
+
+                        <FileText size={16} />
+
+                        Logs
+
+                      </button>
+
+                    </div>
 
                   </div>
 
+                );
 
-
-                  {/* Action Buttons */}
-
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-
-                    <button
-
-                      onClick={() => handleStart(container)}
-
-                      disabled={container.isRunning}
-
-                      style={{
-
-                        flex: 1,
-
-                        padding: '0.75rem',
-
-                        background: container.isRunning ? '#333' : '#4ecca3',
-
-                        border: 'none',
-
-                        borderRadius: '4px',
-
-                        color: container.isRunning ? '#666' : '#1a1a2e',
-
-                        cursor: container.isRunning ? 'not-allowed' : 'pointer',
-
-                        fontWeight: 'bold',
-
-                        display: 'flex',
-
-                        alignItems: 'center',
-
-                        justifyContent: 'center',
-
-                        gap: '0.5rem'
-
-                      }}
-
-                    >
-
-                      <Play size={16} />
-
-                      Start
-
-                    </button>
-
-                    
-
-                    <button
-
-                      onClick={() => handleStop(container)}
-
-                      disabled={!container.isRunning}
-
-                      style={{
-
-                        flex: 1,
-
-                        padding: '0.75rem',
-
-                        background: !container.isRunning ? '#333' : '#e94560',
-
-                        border: 'none',
-
-                        borderRadius: '4px',
-
-                        color: !container.isRunning ? '#666' : '#fff',
-
-                        cursor: !container.isRunning ? 'not-allowed' : 'pointer',
-
-                        fontWeight: 'bold',
-
-                        display: 'flex',
-
-                        alignItems: 'center',
-
-                        justifyContent: 'center',
-
-                        gap: '0.5rem'
-
-                      }}
-
-                    >
-
-                      <Square size={16} />
-
-                      Stop
-
-                    </button>
-
-                    
-
-                    <button
-
-                      onClick={() => handleLogs(container)}
-
-                      style={{
-
-                        flex: 1,
-
-                        padding: '0.75rem',
-
-                        background: '#6c5ce7',
-
-                        border: 'none',
-
-                        borderRadius: '4px',
-
-                        color: '#fff',
-
-                        cursor: 'pointer',
-
-                        fontWeight: 'bold',
-
-                        display: 'flex',
-
-                        alignItems: 'center',
-
-                        justifyContent: 'center',
-
-                        gap: '0.5rem'
-
-                      }}
-
-                    >
-
-                      <FileText size={16} />
-
-                      Logs
-
-                    </button>
-
-                  </div>
-
-                </div>
-
-              ))}
+              })}
 
             </div>
 
@@ -988,4 +1201,3 @@ function Dashboard() {
 
 
 export default Dashboard;
-
