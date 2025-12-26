@@ -1,8 +1,8 @@
 // frontend/src/pages/tools/DockerGenerator.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, Copy, Check, Rocket, X, FolderOpen, Home } from 'lucide-react';
+import { ArrowLeft, Download, Copy, Check, Rocket, X, FolderOpen, Home, Plus, Minus, GripVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 
@@ -17,32 +17,125 @@ function DockerGenerator() {
   const [filePath, setFilePath] = useState('');
   const [deployMode, setDeployMode] = useState('deploy-and-run');
   const [containerName, setContainerName] = useState('');
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
+  
   const [formData, setFormData] = useState({
     baseImage: 'node:18-alpine',
     workdir: '/app',
     port: '3010',
     installCommand: 'npm install',
     buildCommand: 'npm run build',
-    startCommand: 'npm', // Just 'npm', will add 'start' separately
-    startArgs: 'start'    // The argument to npm
+    startCommand: 'npm',
+    startArgs: 'start'
   });
 
-  const generateDockerfile = () => {
-    // Generate proper CMD array format
+  // Generate initial lines from form data
+  const generateLinesFromForm = () => {
     const cmdParts = formData.startCommand.trim().split(/\s+/);
     if (formData.startArgs) {
       cmdParts.push(...formData.startArgs.trim().split(/\s+/));
     }
     const cmdString = cmdParts.map(part => `"${part}"`).join(', ');
     
-    return `FROM ${formData.baseImage}
-WORKDIR ${formData.workdir}
-COPY package*.json ./
-RUN ${formData.installCommand}
-COPY . .
-RUN ${formData.buildCommand}
-EXPOSE ${formData.port}
-CMD [${cmdString}]`;
+    return [
+      { id: 1, content: `FROM ${formData.baseImage}`, editable: false },
+      { id: 2, content: `WORKDIR ${formData.workdir}`, editable: false },
+      { id: 3, content: 'COPY package*.json ./', editable: true },
+      { id: 4, content: `RUN ${formData.installCommand}`, editable: false },
+      { id: 5, content: 'COPY . .', editable: true },
+      { id: 6, content: `RUN ${formData.buildCommand}`, editable: false },
+      { id: 7, content: `EXPOSE ${formData.port}`, editable: false },
+      { id: 8, content: `CMD [${cmdString}]`, editable: false }
+    ];
+  };
+
+  const [dockerLines, setDockerLines] = useState(generateLinesFromForm());
+
+  // Update lines when form changes
+  useEffect(() => {
+    const newLines = generateLinesFromForm();
+    // Preserve editable lines that user may have modified
+    const updatedLines = newLines.map((newLine, index) => {
+      const existingLine = dockerLines[index];
+      if (existingLine && newLine.editable && existingLine.editable) {
+        return existingLine; // Keep user's edits
+      }
+      return newLine;
+    });
+    setDockerLines(updatedLines);
+  }, [formData]);
+
+  const generateDockerfile = () => {
+    return dockerLines.map(line => line.content).join('\n');
+  };
+
+  const handleDragStart = (e, index) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggedIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e, dropIndex) => {
+    e.preventDefault();
+    
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const newLines = [...dockerLines];
+    const draggedLine = newLines[draggedIndex];
+    
+    newLines.splice(draggedIndex, 1);
+    const insertIndex = draggedIndex < dropIndex ? dropIndex - 1 : dropIndex;
+    newLines.splice(insertIndex, 0, draggedLine);
+    
+    setDockerLines(newLines);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const addLine = (index) => {
+    const newLines = [...dockerLines];
+    const lineToCopy = newLines[index];
+    const newId = Math.max(...dockerLines.map(l => l.id)) + 1;
+    const newLine = { ...lineToCopy, id: newId, editable: true };
+    newLines.splice(index + 1, 0, newLine);
+    setDockerLines(newLines);
+    toast.success('Line added!');
+  };
+
+  const removeLine = (index) => {
+    if (dockerLines.length <= 1) {
+      toast.error('Cannot remove the last line!');
+      return;
+    }
+    const newLines = dockerLines.filter((_, i) => i !== index);
+    setDockerLines(newLines);
+    toast.success('Line removed!');
+  };
+
+  const updateLineContent = (index, newContent) => {
+    const newLines = [...dockerLines];
+    newLines[index].content = newContent;
+    setDockerLines(newLines);
   };
 
   const handleCopy = () => {
@@ -74,13 +167,11 @@ CMD [${cmdString}]`;
   };
 
   const handleDeploy = async () => {
-    // Validate container name if deploy-and-run
     if (deployMode === 'deploy-and-run' && !containerName.trim()) {
       toast.error('Please enter a container name!');
       return;
     }
 
-    // Validate container name format
     if (deployMode === 'deploy-and-run') {
       const nameRegex = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/;
       if (!nameRegex.test(containerName)) {
@@ -173,7 +264,6 @@ CMD [${cmdString}]`;
           </div>
         </div>
         
-        {/* Dashboard Button - FIXED POSITION */}
         <button
           onClick={() => navigate('/dashboard')}
           style={{
@@ -401,7 +491,7 @@ CMD [${cmdString}]`;
                 />
               </div>
               <small style={{ color: '#aaa', fontSize: '0.8rem', marginTop: '0.25rem', display: 'block' }}>
-                Command and arguments (e.g., "npm" + "start" → CMD ["npm", "start"])
+                Command and arguments (e.g., "npm" + "start")
               </small>
             </div>
 
@@ -477,7 +567,6 @@ CMD [${cmdString}]`;
                 </label>
               </div>
 
-              {/* Container Name Input - Only show for Deploy & Run */}
               {deployMode === 'deploy-and-run' && (
                 <div style={{ marginTop: '1rem' }}>
                   <label style={{ 
@@ -513,7 +602,7 @@ CMD [${cmdString}]`;
           </div>
         </div>
 
-        {/* Preview */}
+        {/* Preview with Drag & Drop */}
         <div style={{
           background: 'linear-gradient(135deg, #1e3a5f 0%, #2a4a6f 100%)',
           border: '2px solid #2496ED',
@@ -596,21 +685,153 @@ CMD [${cmdString}]`;
             </div>
           </div>
 
-          <pre style={{
+          {/* Draggable Lines Preview */}
+          <div style={{
             flex: 1,
-            background: '#0f0f0f',
+            background: '#0f3460',
             border: '2px solid #2496ED40',
             borderRadius: '8px',
-            padding: '1.5rem',
-            overflow: 'auto',
-            fontFamily: "'Courier New', monospace",
-            fontSize: '0.9rem',
-            lineHeight: '1.6',
-            color: '#4ecca3',
-            margin: 0
+            padding: '1rem',
+            overflow: 'auto'
           }}>
-            {generateDockerfile()}
-          </pre>
+            <p style={{ 
+              color: '#aaa', 
+              fontSize: '0.85rem', 
+              margin: '0 0 1rem 0',
+              fontStyle: 'italic'
+            }}>
+              💡 Drag lines to reorder • Click + to duplicate • Click - to remove
+            </p>
+            
+            {dockerLines.map((line, index) => (
+              <div
+                key={line.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, index)}
+                onDragEnd={handleDragEnd}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  marginBottom: '0.5rem',
+                  padding: '0.5rem',
+                  background: draggedIndex === index ? '#2496ED30' : 
+                              dragOverIndex === index ? '#4ecca330' : 
+                              '#16213e',
+                  borderRadius: '6px',
+                  border: dragOverIndex === index ? '2px dashed #4ecca3' : '2px solid transparent',
+                  transition: 'all 0.2s ease',
+                  cursor: 'grab'
+                }}
+              >
+                {/* Remove Button */}
+                <button
+                  onClick={() => removeLine(index)}
+                  style={{
+                    background: '#e9456020',
+                    border: '1px solid #e94560',
+                    borderRadius: '4px',
+                    width: '20px',
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#e94560';
+                    e.currentTarget.style.transform = 'scale(1.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#e9456020';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                >
+                  <Minus size={12} color="#fff" />
+                </button>
+
+                {/* Drag Handle */}
+                <div style={{ 
+                  color: '#666', 
+                  cursor: 'grab',
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <GripVertical size={16} />
+                </div>
+
+                {/* Line Content */}
+                {line.editable ? (
+                  <input
+                    type="text"
+                    value={line.content}
+                    onChange={(e) => updateLineContent(index, e.target.value)}
+                    style={{
+                      flex: 1,
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#4ecca3',
+                      fontFamily: "'Courier New', monospace",
+                      fontSize: '0.9rem',
+                      padding: '0.25rem 0.5rem',
+                      outline: 'none'
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.background = '#ffffff10';
+                      e.currentTarget.style.borderRadius = '4px';
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                    }}
+                  />
+                ) : (
+                  <span style={{
+                    flex: 1,
+                    color: '#4ecca3',
+                    fontFamily: "'Courier New', monospace",
+                    fontSize: '0.9rem',
+                    padding: '0.25rem 0.5rem'
+                  }}>
+                    {line.content}
+                  </span>
+                )}
+
+                {/* Add Button */}
+                <button
+                  onClick={() => addLine(index)}
+                  style={{
+                    background: '#4ecca320',
+                    border: '1px solid #4ecca3',
+                    borderRadius: '4px',
+                    width: '20px',
+                    height: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#4ecca3';
+                    e.currentTarget.style.transform = 'scale(1.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#4ecca320';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                >
+                  <Plus size={12} color="#fff" />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -640,7 +861,6 @@ CMD [${cmdString}]`;
             flexDirection: 'column',
             boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
           }}>
-            {/* Popup Header */}
             <div style={{
               padding: '1.5rem',
               borderBottom: '2px solid #2496ED',
@@ -704,7 +924,6 @@ CMD [${cmdString}]`;
               </button>
             </div>
 
-            {/* Logs Content */}
             <div style={{
               flex: 1,
               padding: '1.5rem',
@@ -734,7 +953,6 @@ CMD [${cmdString}]`;
               ))}
             </div>
 
-            {/* Footer */}
             {!deploying && deploySuccess !== null && (
               <div style={{
                 padding: '1.5rem',
@@ -767,7 +985,6 @@ CMD [${cmdString}]`;
                   onClick={() => {
                     setShowLogsPopup(false);
                     if (deploySuccess && deployMode === 'deploy-and-run') {
-                      // Navigate to dashboard after successful deployment
                       setTimeout(() => navigate('/dashboard'), 500);
                     }
                   }}
