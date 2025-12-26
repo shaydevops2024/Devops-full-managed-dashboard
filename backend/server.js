@@ -1,4 +1,3 @@
-
 // /home/shayg/open-source-contribute/Devops-full-managed-dashboard/backend/server.js
 
 const express = require('express');
@@ -34,6 +33,8 @@ const fileRoutes = require('./routes/files');
 const monitoringRoutes = require('./routes/monitoring');
 
 const dockerRoutes = require('./routes/docker');
+
+const deployRoutes = require('./routes/deploy');
 
 const logger = require('./utils/logger');
 
@@ -165,6 +166,8 @@ app.use('/api/monitoring', monitoringRoutes);
 
 app.use('/api/docker', dockerRoutes);
 
+app.use('/api/deploy', deployRoutes);
+
 
 
 // Health check
@@ -222,4 +225,3 @@ server.listen(PORT, '0.0.0.0', () => {
 
 
 module.exports = { app, io };
-

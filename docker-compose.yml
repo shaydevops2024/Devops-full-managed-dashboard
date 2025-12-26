@@ -58,6 +58,8 @@ services:
 
       - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/host/usr/local/bin:/host/usr/bin:/host/snap/bin
 
+      - GENERATOR_BASE_PATH=/generator
+
     volumes:
 
       - ./backend/uploads:/app/uploads
@@ -71,6 +73,8 @@ services:
       - /usr/bin:/host/usr/bin:ro
 
       - /snap/bin:/host/snap/bin:ro
+
+      - ${HOME}/Generator:/generator
 
     depends_on:
 

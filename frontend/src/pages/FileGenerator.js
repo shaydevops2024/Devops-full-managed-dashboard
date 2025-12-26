@@ -20,6 +20,8 @@ const TOOLS = [
 
     icon: '🐳',
 
+    iconSize: '3.5rem',
+
     description: 'Generate Dockerfiles, docker-compose.yml, and .dockerignore files'
 
   },
@@ -33,6 +35,8 @@ const TOOLS = [
     color: '#7B42BC',
 
     icon: '🏗️',
+
+    iconSize: '3.5rem',
 
     description: 'Create Terraform configuration files for infrastructure as code'
 
@@ -48,6 +52,8 @@ const TOOLS = [
 
     icon: '☸️',
 
+    iconSize: '3.5rem',
+
     description: 'Generate Kubernetes manifests, deployments, and services'
 
   },
@@ -61,6 +67,8 @@ const TOOLS = [
     color: '#0F1689',
 
     icon: '⎈',
+
+    iconSize: '4.5rem',
 
     description: 'Create Helm charts and values files for K8s applications'
 
@@ -76,6 +84,8 @@ const TOOLS = [
 
     icon: '🔄',
 
+    iconSize: '3.5rem',
+
     description: 'Generate ArgoCD application manifests and sync configurations'
 
   },
@@ -89,6 +99,8 @@ const TOOLS = [
     color: '#D24939',
 
     icon: '👷',
+
+    iconSize: '3.5rem',
 
     description: 'Create Jenkinsfiles and pipeline configurations'
 
@@ -172,7 +184,7 @@ function FileGenerator() {
 
           <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.9rem', color: '#aaa' }}>
 
-            Select a tool to generate configuration files
+            Select a tool to generate and deploy configuration files
 
           </p>
 
@@ -220,7 +232,7 @@ function FileGenerator() {
 
           }}>
 
-            Generate Configuration Files
+            Generate & Deploy Configuration Files
 
           </h2>
 
@@ -236,7 +248,7 @@ function FileGenerator() {
 
           }}>
 
-            Choose a DevOps tool to create professional configuration files instantly
+            Choose a DevOps tool to create and deploy professional configurations instantly
 
           </p>
 
@@ -268,9 +280,9 @@ function FileGenerator() {
 
               style={{
 
-                background: '#16213e',
+                background: 'linear-gradient(135deg, #1e3a5f 0%, #2a4a6f 100%)',
 
-                border: `3px solid ${tool.color}40`,
+                border: `3px solid ${tool.color}`,
 
                 borderRadius: '12px',
 
@@ -284,7 +296,9 @@ function FileGenerator() {
 
                 position: 'relative',
 
-                overflow: 'hidden'
+                overflow: 'hidden',
+
+                boxShadow: `0 4px 12px ${tool.color}40`
 
               }}
 
@@ -292,9 +306,9 @@ function FileGenerator() {
 
                 e.currentTarget.style.transform = 'translateY(-8px)';
 
-                e.currentTarget.style.boxShadow = `0 12px 24px ${tool.color}40`;
+                e.currentTarget.style.boxShadow = `0 12px 24px ${tool.color}60`;
 
-                e.currentTarget.style.borderColor = tool.color;
+                e.currentTarget.style.background = `linear-gradient(135deg, #2a4a6f 0%, #3a5a8f 100%)`;
 
               }}
 
@@ -302,9 +316,9 @@ function FileGenerator() {
 
                 e.currentTarget.style.transform = 'translateY(0)';
 
-                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.boxShadow = `0 4px 12px ${tool.color}40`;
 
-                e.currentTarget.style.borderColor = `${tool.color}40`;
+                e.currentTarget.style.background = 'linear-gradient(135deg, #1e3a5f 0%, #2a4a6f 100%)';
 
               }}
 
@@ -324,7 +338,7 @@ function FileGenerator() {
 
                 height: '150px',
 
-                background: `radial-gradient(circle, ${tool.color}20 0%, transparent 70%)`,
+                background: `radial-gradient(circle, ${tool.color}30 0%, transparent 70%)`,
 
                 pointerEvents: 'none'
 
@@ -340,7 +354,7 @@ function FileGenerator() {
 
                 <div style={{ 
 
-                  fontSize: '3.5rem', 
+                  fontSize: tool.iconSize, 
 
                   marginBottom: '1rem',
 
@@ -364,7 +378,9 @@ function FileGenerator() {
 
                   color: tool.color,
 
-                  fontWeight: 'bold'
+                  fontWeight: 'bold',
+
+                  textShadow: `0 0 20px ${tool.color}80`
 
                 }}>
 
@@ -380,7 +396,7 @@ function FileGenerator() {
 
                   margin: 0, 
 
-                  color: '#aaa',
+                  color: '#ddd',
 
                   fontSize: '0.95rem',
 
@@ -434,9 +450,9 @@ function FileGenerator() {
 
         <div style={{
 
-          background: '#16213e',
+          background: 'linear-gradient(135deg, #1e3a5f 0%, #2a4a6f 100%)',
 
-          border: '2px solid #0f3460',
+          border: '2px solid #4ecca3',
 
           borderRadius: '12px',
 
@@ -466,7 +482,7 @@ function FileGenerator() {
 
             paddingLeft: '1.5rem',
 
-            color: '#aaa',
+            color: '#ddd',
 
             lineHeight: '2'
 
@@ -478,7 +494,9 @@ function FileGenerator() {
 
             <li>Customize the templates based on your specific requirements</li>
 
-            <li>Download generated files directly to your local machine</li>
+            <li>Files are automatically saved to <strong style={{ color: '#4ecca3' }}>~/Generator/[tool-name]/</strong> on your machine</li>
+
+            <li>Click <strong style={{ color: '#e94560' }}>Deploy</strong> to create files and validate configurations</li>
 
           </ul>
 

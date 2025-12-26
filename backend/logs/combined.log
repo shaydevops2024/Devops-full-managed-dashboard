@@ -190,3 +190,69 @@
 {"level":"info","message":"Checking tool: jenkins","timestamp":"2025-12-26T09:12:19.545Z"}
 {"level":"warn","message":"jenkins not found in any standard path","timestamp":"2025-12-26T09:12:19.546Z"}
 {"level":"info","message":"Tool check result: jenkins - Installed: false, Version: null","timestamp":"2025-12-26T09:12:19.546Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T09:29:41.002Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T09:29:41.005Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T09:29:41.022Z"}
+{"level":"info","message":"Docker file saved to /tmp/docker-1766741408694/Dockerfile","timestamp":"2025-12-26T09:30:08.695Z"}
+{"level":"info","message":"Docker file saved to /tmp/docker-1766741417921/Dockerfile","timestamp":"2025-12-26T09:30:17.923Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T09:50:07.621Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T09:50:07.625Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T09:50:07.645Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T09:50:20.553Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T09:55:41.096Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T09:55:41.100Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T09:55:41.139Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T09:55:51.290Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T09:56:20.290Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T09:57:39.129Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T10:05:17.446Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T10:05:17.449Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T10:05:17.469Z"}
+{"level":"info","message":"Checking tool: docker","timestamp":"2025-12-26T10:05:21.808Z"}
+{"level":"info","message":"Tool check result: docker - Installed: true, Version: 28.0.1","timestamp":"2025-12-26T10:05:21.817Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T10:05:27.214Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T10:05:43.246Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T10:06:14.475Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T10:10:58.530Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T10:10:58.533Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T10:10:58.563Z"}
+{"level":"info","message":"Checking tool: docker","timestamp":"2025-12-26T10:11:03.736Z"}
+{"level":"info","message":"Tool check result: docker - Installed: true, Version: 28.0.1","timestamp":"2025-12-26T10:11:03.746Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T10:11:08.785Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T10:11:33.910Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T10:18:24.707Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T10:18:24.709Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T10:18:24.737Z"}
+{"level":"info","message":"Checking tool: docker","timestamp":"2025-12-26T10:18:29.206Z"}
+{"level":"info","message":"Tool check result: docker - Installed: true, Version: 28.0.1","timestamp":"2025-12-26T10:18:29.216Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T10:18:38.218Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T10:19:35.296Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T10:19:35.298Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T10:19:35.319Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Port: 5555","timestamp":"2025-12-26T10:20:06.213Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T10:20:06.215Z"}
+{"json":{"data":[],"type":"Buffer"},"level":"error","message":"Start container error: (HTTP code 304) container already started -  ","reason":"container already started","stack":"Error: (HTTP code 304) container already started -  \n    at /app/node_modules/docker-modem/lib/modem.js:383:17\n    at getCause (/app/node_modules/docker-modem/lib/modem.js:418:7)\n    at Modem.buildPayload (/app/node_modules/docker-modem/lib/modem.js:379:5)\n    at IncomingMessage.<anonymous> (/app/node_modules/docker-modem/lib/modem.js:347:16)\n    at IncomingMessage.emit (node:events:529:35)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)","statusCode":304,"timestamp":"2025-12-26T10:20:19.239Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T10:29:43.242Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T10:29:43.247Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T10:29:43.278Z"}
+{"json":{"data":[],"type":"Buffer"},"level":"error","message":"Start container error: (HTTP code 304) container already started -  ","reason":"container already started","stack":"Error: (HTTP code 304) container already started -  \n    at /app/node_modules/docker-modem/lib/modem.js:383:17\n    at getCause (/app/node_modules/docker-modem/lib/modem.js:418:7)\n    at Modem.buildPayload (/app/node_modules/docker-modem/lib/modem.js:379:5)\n    at IncomingMessage.<anonymous> (/app/node_modules/docker-modem/lib/modem.js:347:16)\n    at IncomingMessage.emit (node:events:529:35)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)","statusCode":304,"timestamp":"2025-12-26T10:29:52.535Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Port: 3010","timestamp":"2025-12-26T10:31:21.665Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T10:31:21.666Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T10:32:15.929Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T10:32:15.932Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T10:32:15.963Z"}
+{"level":"info","message":"New user registered: test@test.com","timestamp":"2025-12-26T10:32:48.723Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Port: 3010","timestamp":"2025-12-26T10:34:27.755Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T10:34:27.758Z"}
+{"level":"info","message":"Container stopped: 682b51306260762cecc5ebf8d4e7cb161e8b671782b4036df72333424d07e61a","timestamp":"2025-12-26T10:34:52.876Z"}
+{"level":"info","message":"Container stopped: 558ee6ae51fe472fa29fe1c5f9c7bcd10dcecac6d3257640cfe59830d066c90f","timestamp":"2025-12-26T10:35:12.450Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T10:35:34.676Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T10:35:34.679Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T10:35:34.702Z"}
+{"level":"info","message":"Container started: 682b51306260762cecc5ebf8d4e7cb161e8b671782b4036df72333424d07e61a","timestamp":"2025-12-26T10:35:39.263Z"}
+{"level":"info","message":"User logged in: test@test.com","timestamp":"2025-12-26T10:36:43.258Z"}
+{"level":"info","message":"Container stopped: 682b51306260762cecc5ebf8d4e7cb161e8b671782b4036df72333424d07e61a","timestamp":"2025-12-26T10:39:53.907Z"}
+{"level":"info","message":"Checking tool: terraform","timestamp":"2025-12-26T10:41:39.322Z"}
+{"level":"info","message":"Found terraform at /host/usr/bin/terraform","timestamp":"2025-12-26T10:41:39.323Z"}
+{"level":"info","message":"Got version for terraform from /host/usr/bin/terraform: Terraform v1.12.2","timestamp":"2025-12-26T10:41:39.926Z"}
+{"level":"info","message":"Tool check result: terraform - Installed: true, Version: Terraform v1.12.2","timestamp":"2025-12-26T10:41:39.927Z"}
