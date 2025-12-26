@@ -256,3 +256,23 @@
 {"level":"info","message":"Found terraform at /host/usr/bin/terraform","timestamp":"2025-12-26T10:41:39.323Z"}
 {"level":"info","message":"Got version for terraform from /host/usr/bin/terraform: Terraform v1.12.2","timestamp":"2025-12-26T10:41:39.926Z"}
 {"level":"info","message":"Tool check result: terraform - Installed: true, Version: Terraform v1.12.2","timestamp":"2025-12-26T10:41:39.927Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T10:55:24.275Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T10:55:24.278Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T10:55:24.298Z"}
+{"level":"info","message":"Container started: 682b51306260762cecc5ebf8d4e7cb161e8b671782b4036df72333424d07e61a","timestamp":"2025-12-26T10:55:34.674Z"}
+{"level":"info","message":"Container stopped: 682b51306260762cecc5ebf8d4e7cb161e8b671782b4036df72333424d07e61a","timestamp":"2025-12-26T10:56:01.469Z"}
+{"level":"info","message":"Attempting to delete container: 682b51306260762cecc5ebf8d4e7cb161e8b671782b4036df72333424d07e61a","timestamp":"2025-12-26T10:56:14.572Z"}
+{"level":"info","message":"Container deleted successfully: 682b51306260762cecc5ebf8d4e7cb161e8b671782b4036df72333424d07e61a","timestamp":"2025-12-26T10:56:14.595Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Port: 3010","timestamp":"2025-12-26T10:56:57.829Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T10:56:57.834Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T11:00:16.998Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T11:00:17.002Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T11:00:17.024Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Port: 1111","timestamp":"2025-12-26T11:00:51.397Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-26T11:00:51.398Z"}
+{"level":"info","message":"Container stopped: 06f0363c8169da317dd8ae848fefd08ccc45240c8a8495d7da9ff27bc03d5567","timestamp":"2025-12-26T11:01:11.788Z"}
+{"level":"info","message":"Container stopped: 3a9b3f0d6a0b30b0ba4b5a07a82bf03d0eaf18684b010157d7edc60c982231b8","timestamp":"2025-12-26T11:01:13.117Z"}
+{"level":"info","message":"Attempting to delete container: 06f0363c8169da317dd8ae848fefd08ccc45240c8a8495d7da9ff27bc03d5567","timestamp":"2025-12-26T11:01:18.824Z"}
+{"level":"info","message":"Container deleted successfully: 06f0363c8169da317dd8ae848fefd08ccc45240c8a8495d7da9ff27bc03d5567","timestamp":"2025-12-26T11:01:18.847Z"}
+{"level":"info","message":"Attempting to delete container: 3a9b3f0d6a0b30b0ba4b5a07a82bf03d0eaf18684b010157d7edc60c982231b8","timestamp":"2025-12-26T11:01:21.332Z"}
+{"level":"info","message":"Container deleted successfully: 3a9b3f0d6a0b30b0ba4b5a07a82bf03d0eaf18684b010157d7edc60c982231b8","timestamp":"2025-12-26T11:01:21.357Z"}

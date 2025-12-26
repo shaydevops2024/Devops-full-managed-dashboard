@@ -118,6 +118,8 @@ export const dockerAPI = {
 
   checkDocker: () => api.get('/docker/check'),
 
+  deleteContainer: (id) => api.delete(`/docker/containers/${id}`)
+
 };
 
 
@@ -137,6 +139,7 @@ export const getLogsUrl = (containerId) => {
   return `${baseUrl}/api/docker/containers/${containerId}/logs?follow=true&tail=500`;
 
 };
+
 
 
 
