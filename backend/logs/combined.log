@@ -282,3 +282,117 @@
 {"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T11:24:26.210Z"}
 {"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T11:24:26.212Z"}
 {"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T11:24:26.229Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T11:36:15.416Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T11:36:15.420Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T11:36:15.442Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-26T15:12:11.208Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-26T15:12:11.211Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-26T15:12:11.239Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-27T10:08:12.081Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-27T10:08:12.083Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-27T10:08:12.106Z"}
+{"level":"info","message":"New user registered: test@test.com","timestamp":"2025-12-27T10:08:23.915Z"}
+{"level":"info","message":"Checking tool: docker","timestamp":"2025-12-27T10:08:25.825Z"}
+{"level":"info","message":"Tool check result: docker - Installed: true, Version: 28.0.1","timestamp":"2025-12-27T10:08:25.836Z"}
+{"level":"info","message":"Checking tool: terraform","timestamp":"2025-12-27T10:08:26.519Z"}
+{"level":"info","message":"Found terraform at /host/usr/bin/terraform","timestamp":"2025-12-27T10:08:26.520Z"}
+{"level":"info","message":"Got version for terraform from /host/usr/bin/terraform: Terraform v1.12.2","timestamp":"2025-12-27T10:08:27.066Z"}
+{"level":"info","message":"Tool check result: terraform - Installed: true, Version: Terraform v1.12.2","timestamp":"2025-12-27T10:08:27.066Z"}
+{"level":"info","message":"Checking tool: kubectl","timestamp":"2025-12-27T10:08:27.562Z"}
+{"level":"info","message":"Found minikube at /host/usr/local/bin/minikube, using for kubectl","timestamp":"2025-12-27T10:08:27.563Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: ENOENT: no such file or directory, access '/host/snap/bin/minikube'","timestamp":"2025-12-27T10:08:27.564Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: Command failed: /host/usr/local/bin/minikube version --short 2>&1\n","timestamp":"2025-12-27T10:08:27.572Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: ENOENT: no such file or directory, access '/host/usr/bin/minikube'","timestamp":"2025-12-27T10:08:27.572Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: ENOENT: no such file or directory, access '/host/bin/minikube'","timestamp":"2025-12-27T10:08:27.573Z"}
+{"level":"info","message":"Tool check result: kubectl - Installed: true, Version: null","timestamp":"2025-12-27T10:08:27.573Z"}
+{"level":"info","message":"Checking tool: helm","timestamp":"2025-12-27T10:08:28.116Z"}
+{"level":"info","message":"Found helm at /host/usr/local/bin/helm","timestamp":"2025-12-27T10:08:28.117Z"}
+{"level":"info","message":"Got version for helm from /host/usr/local/bin/helm: v3.17.1+g980d8ac","timestamp":"2025-12-27T10:08:28.418Z"}
+{"level":"info","message":"Tool check result: helm - Installed: true, Version: v3.17.1+g980d8ac","timestamp":"2025-12-27T10:08:28.419Z"}
+{"level":"info","message":"Checking tool: argocd","timestamp":"2025-12-27T10:08:29.133Z"}
+{"level":"info","message":"Found argocd at /host/usr/local/bin/argocd","timestamp":"2025-12-27T10:08:29.134Z"}
+{"level":"info","message":"Got version for argocd from /host/usr/local/bin/argocd: argocd: v3.0.11+240a183","timestamp":"2025-12-27T10:08:29.848Z"}
+{"level":"info","message":"Tool check result: argocd - Installed: true, Version: argocd: v3.0.11+240a183","timestamp":"2025-12-27T10:08:29.848Z"}
+{"level":"info","message":"Checking tool: ansible","timestamp":"2025-12-27T10:08:30.387Z"}
+{"level":"info","message":"Found ansible at /host/usr/bin/ansible","timestamp":"2025-12-27T10:08:30.388Z"}
+{"level":"info","message":"Got version for ansible from /host/usr/bin/ansible: /bin/sh: /host/usr/bin/ansible: not found","timestamp":"2025-12-27T10:08:30.393Z"}
+{"level":"info","message":"Tool check result: ansible - Installed: true, Version: /bin/sh: /host/usr/bin/ansible: not found","timestamp":"2025-12-27T10:08:30.393Z"}
+{"level":"info","message":"Checking tool: jenkins","timestamp":"2025-12-27T10:08:31.351Z"}
+{"level":"warn","message":"jenkins not found in any standard path","timestamp":"2025-12-27T10:08:31.352Z"}
+{"level":"info","message":"Tool check result: jenkins - Installed: false, Version: null","timestamp":"2025-12-27T10:08:31.352Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Port: 3010","timestamp":"2025-12-27T10:09:35.519Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-27T10:09:35.523Z"}
+{"level":"info","message":"Container stopped: 809e0ef91add2408d2d12a278096bc21f7986bae1881acbbfa5cbe41a8918f64","timestamp":"2025-12-27T10:09:53.570Z"}
+{"level":"info","message":"Attempting to delete container: 809e0ef91add2408d2d12a278096bc21f7986bae1881acbbfa5cbe41a8918f64","timestamp":"2025-12-27T10:09:59.256Z"}
+{"level":"info","message":"Container deleted successfully: 809e0ef91add2408d2d12a278096bc21f7986bae1881acbbfa5cbe41a8918f64","timestamp":"2025-12-27T10:09:59.293Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-27T10:16:44.636Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-27T10:16:44.639Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-27T10:16:44.671Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-27T10:29:36.400Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-27T10:29:36.401Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-27T10:29:36.421Z"}
+{"level":"info","message":"Checking tool: docker","timestamp":"2025-12-27T10:29:39.095Z"}
+{"level":"info","message":"Tool check result: docker - Installed: true, Version: 28.0.1","timestamp":"2025-12-27T10:29:39.105Z"}
+{"level":"info","message":"Starting Dockerfile validation with dry run","timestamp":"2025-12-27T10:30:00.690Z"}
+{"cmd":"docker build -t dockerfile-validation-1766831400690 /tmp/dockerfile-validation-1766831400690","code":127,"killed":false,"level":"error","message":"Docker build validation failed: Command failed: docker build -t dockerfile-validation-1766831400690 /tmp/dockerfile-validation-1766831400690\n/bin/sh: docker: not found\n","signal":null,"stack":"Error: Command failed: docker build -t dockerfile-validation-1766831400690 /tmp/dockerfile-validation-1766831400690\n/bin/sh: docker: not found\n\n    at ChildProcess.exithandler (node:child_process:422:12)\n    at ChildProcess.emit (node:events:517:28)\n    at maybeClose (node:internal/child_process:1098:16)\n    at Socket.<anonymous> (node:internal/child_process:450:11)\n    at Socket.emit (node:events:517:28)\n    at Pipe.<anonymous> (node:net:350:12)","stderr":"/bin/sh: docker: not found\n","stdout":"","timestamp":"2025-12-27T10:30:00.701Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Port: 3010","timestamp":"2025-12-27T10:30:35.489Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-27T10:30:35.491Z"}
+{"level":"info","message":"Container stopped: 52698e5163e8126267d923130a93fe441cee8d23251b42a4298eb1d6d20aaf91","timestamp":"2025-12-27T10:30:51.508Z"}
+{"level":"info","message":"Attempting to delete container: 52698e5163e8126267d923130a93fe441cee8d23251b42a4298eb1d6d20aaf91","timestamp":"2025-12-27T10:31:11.371Z"}
+{"level":"info","message":"Container deleted successfully: 52698e5163e8126267d923130a93fe441cee8d23251b42a4298eb1d6d20aaf91","timestamp":"2025-12-27T10:31:11.393Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-27T10:34:59.855Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-27T10:34:59.858Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-27T10:34:59.904Z"}
+{"level":"info","message":"Starting Dockerfile validation with dockerode","timestamp":"2025-12-27T10:35:09.850Z"}
+{"level":"info","message":"Building validation image: dockerfile-validation-1766831709850","timestamp":"2025-12-27T10:35:09.854Z"}
+{"level":"info","message":"Docker build validation succeeded","timestamp":"2025-12-27T10:35:09.864Z"}
+{"json":{"message":"No such image: dockerfile-validation-1766831709850:latest"},"level":"error","message":"Error removing validation image: (HTTP code 404) no such image - No such image: dockerfile-validation-1766831709850:latest ","reason":"no such image","stack":"Error: (HTTP code 404) no such image - No such image: dockerfile-validation-1766831709850:latest \n    at /app/node_modules/docker-modem/lib/modem.js:383:17\n    at getCause (/app/node_modules/docker-modem/lib/modem.js:418:7)\n    at Modem.buildPayload (/app/node_modules/docker-modem/lib/modem.js:379:5)\n    at IncomingMessage.<anonymous> (/app/node_modules/docker-modem/lib/modem.js:347:16)\n    at IncomingMessage.emit (node:events:529:35)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)","statusCode":404,"timestamp":"2025-12-27T10:35:09.868Z"}
+{"level":"info","message":"Starting Dockerfile validation with dockerode","timestamp":"2025-12-27T10:35:21.397Z"}
+{"level":"info","message":"Building validation image: dockerfile-validation-1766831721397","timestamp":"2025-12-27T10:35:21.400Z"}
+{"level":"info","message":"Docker build validation succeeded","timestamp":"2025-12-27T10:35:21.408Z"}
+{"json":{"message":"No such image: dockerfile-validation-1766831721397:latest"},"level":"error","message":"Error removing validation image: (HTTP code 404) no such image - No such image: dockerfile-validation-1766831721397:latest ","reason":"no such image","stack":"Error: (HTTP code 404) no such image - No such image: dockerfile-validation-1766831721397:latest \n    at /app/node_modules/docker-modem/lib/modem.js:383:17\n    at getCause (/app/node_modules/docker-modem/lib/modem.js:418:7)\n    at Modem.buildPayload (/app/node_modules/docker-modem/lib/modem.js:379:5)\n    at IncomingMessage.<anonymous> (/app/node_modules/docker-modem/lib/modem.js:347:16)\n    at IncomingMessage.emit (node:events:529:35)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)","statusCode":404,"timestamp":"2025-12-27T10:35:21.412Z"}
+{"level":"info","message":"Starting Dockerfile validation with dockerode","timestamp":"2025-12-27T10:35:55.710Z"}
+{"level":"info","message":"Building validation image: dockerfile-validation-1766831755710","timestamp":"2025-12-27T10:35:55.712Z"}
+{"json":null,"level":"error","message":"Docker build validation failed: (HTTP code 400) unexpected - dockerfile parse error on line 7: unknown instruction: EXPOSE1 (did you mean EXPOSE?) ","stack":"Error: (HTTP code 400) unexpected - dockerfile parse error on line 7: unknown instruction: EXPOSE1 (did you mean EXPOSE?) \n    at /app/node_modules/docker-modem/lib/modem.js:383:17\n    at handler (/app/node_modules/docker-modem/lib/modem.js:426:11)\n    at IncomingMessage.<anonymous> (/app/node_modules/docker-modem/lib/modem.js:415:9)\n    at IncomingMessage.emit (node:events:529:35)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)","statusCode":400,"timestamp":"2025-12-27T10:35:55.723Z"}
+{"level":"info","message":"Starting Dockerfile validation with dockerode","timestamp":"2025-12-27T10:36:12.026Z"}
+{"level":"info","message":"Building validation image: dockerfile-validation-1766831772026","timestamp":"2025-12-27T10:36:12.028Z"}
+{"level":"info","message":"Docker build validation succeeded","timestamp":"2025-12-27T10:36:13.834Z"}
+{"json":{"message":"No such image: dockerfile-validation-1766831772026:latest"},"level":"error","message":"Error removing validation image: (HTTP code 404) no such image - No such image: dockerfile-validation-1766831772026:latest ","reason":"no such image","stack":"Error: (HTTP code 404) no such image - No such image: dockerfile-validation-1766831772026:latest \n    at /app/node_modules/docker-modem/lib/modem.js:383:17\n    at getCause (/app/node_modules/docker-modem/lib/modem.js:418:7)\n    at Modem.buildPayload (/app/node_modules/docker-modem/lib/modem.js:379:5)\n    at IncomingMessage.<anonymous> (/app/node_modules/docker-modem/lib/modem.js:347:16)\n    at IncomingMessage.emit (node:events:529:35)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)","statusCode":404,"timestamp":"2025-12-27T10:36:13.836Z"}
+{"level":"info","message":"Starting Dockerfile validation with dockerode","timestamp":"2025-12-27T10:36:21.854Z"}
+{"level":"info","message":"Building validation image: dockerfile-validation-1766831781854","timestamp":"2025-12-27T10:36:21.855Z"}
+{"level":"info","message":"Docker build validation succeeded","timestamp":"2025-12-27T10:36:23.913Z"}
+{"json":{"message":"No such image: dockerfile-validation-1766831781854:latest"},"level":"error","message":"Error removing validation image: (HTTP code 404) no such image - No such image: dockerfile-validation-1766831781854:latest ","reason":"no such image","stack":"Error: (HTTP code 404) no such image - No such image: dockerfile-validation-1766831781854:latest \n    at /app/node_modules/docker-modem/lib/modem.js:383:17\n    at getCause (/app/node_modules/docker-modem/lib/modem.js:418:7)\n    at Modem.buildPayload (/app/node_modules/docker-modem/lib/modem.js:379:5)\n    at IncomingMessage.<anonymous> (/app/node_modules/docker-modem/lib/modem.js:347:16)\n    at IncomingMessage.emit (node:events:529:35)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)","statusCode":404,"timestamp":"2025-12-27T10:36:23.914Z"}
+{"level":"info","message":"Starting Dockerfile validation with dockerode","timestamp":"2025-12-27T10:36:33.236Z"}
+{"level":"info","message":"Building validation image: dockerfile-validation-1766831793236","timestamp":"2025-12-27T10:36:33.239Z"}
+{"level":"info","message":"Docker build validation succeeded","timestamp":"2025-12-27T10:36:35.091Z"}
+{"json":{"message":"No such image: dockerfile-validation-1766831793236:latest"},"level":"error","message":"Error removing validation image: (HTTP code 404) no such image - No such image: dockerfile-validation-1766831793236:latest ","reason":"no such image","stack":"Error: (HTTP code 404) no such image - No such image: dockerfile-validation-1766831793236:latest \n    at /app/node_modules/docker-modem/lib/modem.js:383:17\n    at getCause (/app/node_modules/docker-modem/lib/modem.js:418:7)\n    at Modem.buildPayload (/app/node_modules/docker-modem/lib/modem.js:379:5)\n    at IncomingMessage.<anonymous> (/app/node_modules/docker-modem/lib/modem.js:347:16)\n    at IncomingMessage.emit (node:events:529:35)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)","statusCode":404,"timestamp":"2025-12-27T10:36:35.092Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-27T10:44:45.027Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-27T10:44:45.030Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-27T10:44:45.051Z"}
+{"level":"info","message":"Starting Dockerfile validation","timestamp":"2025-12-27T10:44:53.775Z"}
+{"level":"info","message":"Building validation image: dockerfile-validation-1766832293775","timestamp":"2025-12-27T10:44:53.777Z"}
+{"level":"error","message":"Validation failed: COPY failed: no source files were specified","stack":"Error: COPY failed: no source files were specified\n    at /app/routes/deploy.js:256:15\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2025-12-27T10:44:53.787Z"}
+{"level":"info","message":"Starting Dockerfile validation","timestamp":"2025-12-27T10:45:00.743Z"}
+{"level":"info","message":"Building validation image: dockerfile-validation-1766832300743","timestamp":"2025-12-27T10:45:00.753Z"}
+{"level":"error","message":"Validation failed: COPY failed: no source files were specified","stack":"Error: COPY failed: no source files were specified\n    at /app/routes/deploy.js:256:15\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2025-12-27T10:45:00.763Z"}
+{"level":"info","message":"Starting Dockerfile validation","timestamp":"2025-12-27T10:45:08.106Z"}
+{"level":"info","message":"Building validation image: dockerfile-validation-1766832308106","timestamp":"2025-12-27T10:45:08.108Z"}
+{"level":"error","message":"Validation failed: COPY failed: no source files were specified","stack":"Error: COPY failed: no source files were specified\n    at /app/routes/deploy.js:256:15\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2025-12-27T10:45:08.119Z"}
+{"level":"info","message":"Starting Dockerfile validation","timestamp":"2025-12-27T10:45:11.298Z"}
+{"level":"info","message":"Building validation image: dockerfile-validation-1766832311298","timestamp":"2025-12-27T10:45:11.299Z"}
+{"level":"error","message":"Validation failed: COPY failed: no source files were specified","stack":"Error: COPY failed: no source files were specified\n    at /app/routes/deploy.js:256:15\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2025-12-27T10:45:11.317Z"}
+{"level":"info","message":"Starting Dockerfile validation","timestamp":"2025-12-27T10:45:22.481Z"}
+{"level":"info","message":"Building validation image: dockerfile-validation-1766832322481","timestamp":"2025-12-27T10:45:22.482Z"}
+{"level":"error","message":"Validation failed: COPY failed: no source files were specified","stack":"Error: COPY failed: no source files were specified\n    at /app/routes/deploy.js:256:15\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2025-12-27T10:45:22.498Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-27T10:56:09.456Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-27T10:56:09.459Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-27T10:56:09.481Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Port: 3010","timestamp":"2025-12-27T10:57:07.665Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-27T10:57:07.667Z"}
+{"level":"info","message":"Container stopped: df0ab4068ae5283c76f2ded96ce855d61cccd6c678ac04d784718973b5ae45d9","timestamp":"2025-12-27T10:57:23.561Z"}
+{"level":"info","message":"Attempting to delete container: df0ab4068ae5283c76f2ded96ce855d61cccd6c678ac04d784718973b5ae45d9","timestamp":"2025-12-27T10:58:33.925Z"}
+{"level":"info","message":"Container deleted successfully: df0ab4068ae5283c76f2ded96ce855d61cccd6c678ac04d784718973b5ae45d9","timestamp":"2025-12-27T10:58:33.943Z"}
+{"level":"info","message":"Checking tool: terraform","timestamp":"2025-12-27T11:02:20.421Z"}
+{"level":"info","message":"Found terraform at /host/usr/bin/terraform","timestamp":"2025-12-27T11:02:20.422Z"}
+{"level":"info","message":"Got version for terraform from /host/usr/bin/terraform: Terraform v1.12.2","timestamp":"2025-12-27T11:02:20.874Z"}
+{"level":"info","message":"Tool check result: terraform - Installed: true, Version: Terraform v1.12.2","timestamp":"2025-12-27T11:02:20.874Z"}

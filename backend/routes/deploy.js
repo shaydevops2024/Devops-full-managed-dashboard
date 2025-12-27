@@ -1,4 +1,4 @@
-// backend/routes/deploy.js - COMPLETE VERSION WITH ALL TOOLS
+// backend/routes/deploy.js - COMPLETE WITH FIXED VALIDATION
 
 const express = require('express');
 const router = express.Router();
@@ -13,10 +13,8 @@ const logger = require('../utils/logger');
 const execAsync = promisify(exec);
 const docker = new Docker({ socketPath: '/var/run/docker.sock' });
 
-// Base path for generated files (mounted from host)
 const GENERATOR_BASE_PATH = process.env.GENERATOR_BASE_PATH || '/generator';
 
-// Helper function to execute command and stream logs
 const executeWithLogs = async (command, workingDir = '.') => {
   return new Promise((resolve) => {
     const { spawn } = require('child_process');
@@ -33,21 +31,15 @@ const executeWithLogs = async (command, workingDir = '.') => {
     });
 
     proc.stdout.on('data', (data) => {
-      const output = data.toString();
-      logs.push({ type: 'stdout', message: output, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: data.toString(), timestamp: new Date() });
     });
 
     proc.stderr.on('data', (data) => {
-      const output = data.toString();
-      logs.push({ type: 'stderr', message: output, timestamp: new Date() });
+      logs.push({ type: 'stderr', message: data.toString(), timestamp: new Date() });
     });
 
     proc.on('close', (code) => {
-      logs.push({ 
-        type: code === 0 ? 'stdout' : 'stderr', 
-        message: `\nProcess exited with code ${code}\n`, 
-        timestamp: new Date() 
-      });
+      logs.push({ type: code === 0 ? 'stdout' : 'stderr', message: `\nProcess exited with code ${code}\n`, timestamp: new Date() });
       resolve({ success: code === 0, logs, exitCode: code });
     });
 
@@ -58,7 +50,6 @@ const executeWithLogs = async (command, workingDir = '.') => {
   });
 };
 
-// Ensure directory exists
 const ensureDir = async (dirPath) => {
   try {
     await fs.mkdir(dirPath, { recursive: true });
@@ -69,7 +60,6 @@ const ensureDir = async (dirPath) => {
   }
 };
 
-// Validate Dockerfile syntax
 const validateDockerfile = async (dockerfilePath) => {
   const logs = [];
   
@@ -122,13 +112,11 @@ const validateDockerfile = async (dockerfilePath) => {
   }
 };
 
-// Create a minimal test application
 const createTestApp = async (dockerDir, port) => {
   const logs = [];
   
   logs.push({ type: 'stdout', message: '\n📦 Creating test application...\n', timestamp: new Date() });
   
-  // Create package.json
   const packageJson = {
     name: "generated-app",
     version: "1.0.0",
@@ -141,13 +129,9 @@ const createTestApp = async (dockerDir, port) => {
     dependencies: {}
   };
   
-  await fs.writeFile(
-    path.join(dockerDir, 'package.json'),
-    JSON.stringify(packageJson, null, 2)
-  );
+  await fs.writeFile(path.join(dockerDir, 'package.json'), JSON.stringify(packageJson, null, 2));
   logs.push({ type: 'stdout', message: '✓ Created package.json\n', timestamp: new Date() });
   
-  // Create index.js
   const indexJs = `const http = require('http');
 const port = ${port};
 
@@ -191,7 +175,6 @@ server.listen(port, '0.0.0.0', () => {
   await fs.writeFile(path.join(dockerDir, 'index.js'), indexJs);
   logs.push({ type: 'stdout', message: '✓ Created index.js\n', timestamp: new Date() });
   
-  // Create a fixed Dockerfile that uses node directly (not npm)
   const fixedDockerfile = `FROM node:18-alpine
 WORKDIR /app
 COPY package*.json ./
@@ -202,12 +185,137 @@ EXPOSE ${port}
 CMD ["node", "index.js"]`;
   
   await fs.writeFile(path.join(dockerDir, 'Dockerfile'), fixedDockerfile);
-  logs.push({ type: 'stdout', message: '✓ Dockerfile optimized for test app (using node directly)\n', timestamp: new Date() });
-  
+  logs.push({ type: 'stdout', message: '✓ Dockerfile optimized for test app\n', timestamp: new Date() });
   logs.push({ type: 'stdout', message: '✓ Test application ready\n', timestamp: new Date() });
   
   return { success: true, logs };
 };
+
+// FIXED VALIDATION ROUTE
+router.post('/validate-dockerfile', auth, async (req, res) => {
+  const { content } = req.body;
+
+  if (!content) {
+    return res.status(400).json({ success: false, error: 'Dockerfile content is required' });
+  }
+
+  const tempTag = `dockerfile-validation-${Date.now()}`;
+  const tempDir = `/tmp/dockerfile-validation-${Date.now()}`;
+
+  try {
+    logger.info('Starting Dockerfile validation');
+    
+    await fs.mkdir(tempDir, { recursive: true });
+    await fs.writeFile(path.join(tempDir, 'Dockerfile'), content);
+
+    try {
+      logger.info(`Building validation image: ${tempTag}`);
+      
+      const stream = await docker.buildImage({
+        context: tempDir,
+        src: ['Dockerfile']
+      }, { t: tempTag });
+
+      const buildLogs = [];
+      let buildFailed = false;
+      let errorMessage = '';
+
+      const output = await new Promise((resolve, reject) => {
+        docker.modem.followProgress(stream, 
+          (err, output) => {
+            if (err) reject(err);
+            else resolve(output);
+          },
+          (event) => {
+            if (event.stream) buildLogs.push(event.stream);
+            if (event.error) {
+              buildFailed = true;
+              errorMessage = event.error;
+              buildLogs.push(`ERROR: ${event.error}`);
+            }
+            if (event.errorDetail) {
+              buildFailed = true;
+              errorMessage = event.errorDetail.message || JSON.stringify(event.errorDetail);
+            }
+          }
+        );
+      });
+
+      // Check output array for errors
+      if (output && Array.isArray(output)) {
+        for (const item of output) {
+          if (item.error || item.errorDetail) {
+            buildFailed = true;
+            errorMessage = item.error || item.errorDetail?.message || 'Build failed';
+            break;
+          }
+        }
+      }
+
+      if (buildFailed) {
+        throw new Error(errorMessage || 'Docker build failed');
+      }
+
+      logger.info('Build succeeded - verifying image exists');
+
+      // Verify image exists
+      try {
+        const image = docker.getImage(tempTag);
+        await image.inspect();
+        await image.remove({ force: true });
+        logger.info('Validation image removed');
+      } catch (removeError) {
+        if (removeError.statusCode === 404) {
+          logger.error('Image not found - build failed');
+          throw new Error('Docker build failed - no image was created');
+        }
+        logger.warn('Could not remove image:', removeError.message);
+      }
+
+      await fs.rm(tempDir, { recursive: true, force: true });
+
+      return res.json({
+        success: true,
+        message: 'Dockerfile validation passed - Docker build succeeded',
+        output: buildLogs.join('')
+      });
+
+    } catch (buildError) {
+      logger.error('Validation failed:', buildError);
+      
+      let errorMessage = 'Build failed';
+      if (typeof buildError === 'string') errorMessage = buildError;
+      else if (buildError.message) errorMessage = buildError.message;
+      else if (buildError.json?.message) errorMessage = buildError.json.message;
+      
+      await fs.rm(tempDir, { recursive: true, force: true });
+
+      try {
+        await docker.getImage(tempTag).remove({ force: true });
+      } catch (e) {}
+
+      return res.json({
+        success: false,
+        error: 'Docker build failed',
+        details: errorMessage
+      });
+    }
+
+  } catch (error) {
+    logger.error('Validation error:', error);
+
+    try {
+      await fs.rm(tempDir, { recursive: true, force: true });
+      await docker.getImage(tempTag).remove({ force: true });
+    } catch (e) {}
+
+    return res.status(500).json({
+      success: false,
+      error: 'Validation failed',
+      details: error.message
+    });
+  }
+});
 
 // Deploy Docker file
 router.post('/docker', auth, async (req, res) => {
@@ -216,14 +324,13 @@ router.post('/docker', auth, async (req, res) => {
     
     logger.info(`Docker deployment - Mode: ${mode}, Port: ${port}`);
     
-    // Create Generator/docker directory
     const dockerDir = path.join(GENERATOR_BASE_PATH, 'docker');
     const created = await ensureDir(dockerDir);
     
     if (!created) {
       return res.status(500).json({
         success: false,
-        logs: [{ type: 'stderr', message: 'Failed to create Generator/docker directory\n', timestamp: new Date() }],
+        logs: [{ type: 'stderr', message: 'Failed to create directory\n', timestamp: new Date() }],
         message: 'Failed to create directory'
       });
     }
@@ -233,17 +340,15 @@ router.post('/docker', auth, async (req, res) => {
     const logs = [
       { type: 'stdout', message: '🚀 Starting Docker deployment...\n', timestamp: new Date() },
       { type: 'stdout', message: `📁 Creating directory: ${dockerDir}\n`, timestamp: new Date() },
-      { type: 'stdout', message: `✓ Directory created successfully\n\n`, timestamp: new Date() }
+      { type: 'stdout', message: `✓ Directory created\n\n`, timestamp: new Date() }
     ];
     
-    // Save Dockerfile
     await fs.writeFile(dockerfilePath, content);
     logs.push({ type: 'stdout', message: `📝 Dockerfile saved to: ${dockerfilePath}\n`, timestamp: new Date() });
-    logs.push({ type: 'stdout', message: `✓ File written successfully\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `✓ File written\n`, timestamp: new Date() });
     
     logger.info(`Dockerfile saved to ${dockerfilePath}`);
     
-    // Validate Dockerfile
     const validation = await validateDockerfile(dockerfilePath);
     logs.push(...validation.logs);
     
@@ -256,11 +361,9 @@ router.post('/docker', auth, async (req, res) => {
       });
     }
     
-    // If mode is "deploy-and-run", create test app and run container
     if (mode === 'deploy-and-run') {
-      logs.push({ type: 'stdout', message: '\n🔨 Deploy & Run mode selected\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '\n🔨 Deploy & Run mode\n', timestamp: new Date() });
       
-      // Create test application
       const appCreation = await createTestApp(dockerDir, port);
       logs.push(...appCreation.logs);
       
@@ -273,7 +376,6 @@ router.post('/docker', auth, async (req, res) => {
         });
       }
       
-      // Build the Docker image
       logs.push({ type: 'stdout', message: '\n🔨 Building Docker image...\n', timestamp: new Date() });
       
       const imageName = containerName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
@@ -282,64 +384,47 @@ router.post('/docker', auth, async (req, res) => {
         const stream = await docker.buildImage({
           context: dockerDir,
           src: ['Dockerfile', 'package.json', 'index.js']
-        }, {
-          t: imageName
-        });
+        }, { t: imageName });
         
-        // Parse build output
         await new Promise((resolve, reject) => {
           docker.modem.followProgress(stream, 
             (err, res) => err ? reject(err) : resolve(res),
             (event) => {
-              if (event.stream) {
-                logs.push({ type: 'stdout', message: event.stream, timestamp: new Date() });
-              }
-              if (event.error) {
-                logs.push({ type: 'stderr', message: event.error, timestamp: new Date() });
-              }
+              if (event.stream) logs.push({ type: 'stdout', message: event.stream, timestamp: new Date() });
+              if (event.error) logs.push({ type: 'stderr', message: event.error, timestamp: new Date() });
             }
           );
         });
         
         logs.push({ type: 'stdout', message: `\n✓ Docker image built: ${imageName}\n`, timestamp: new Date() });
         
-        // Check if container with same name exists and remove it
         try {
           const existingContainer = docker.getContainer(containerName);
-          await existingContainer.inspect(); // This will throw if container doesn't exist
-          logs.push({ type: 'stdout', message: `\n⚠ Container "${containerName}" already exists, removing...\n`, timestamp: new Date() });
+          await existingContainer.inspect();
+          logs.push({ type: 'stdout', message: `\n⚠ Container "${containerName}" exists, removing...\n`, timestamp: new Date() });
           
           try {
             await existingContainer.stop({ t: 5 });
             logs.push({ type: 'stdout', message: `✓ Container stopped\n`, timestamp: new Date() });
           } catch (stopErr) {
-            // Container might not be running, that's ok
             logs.push({ type: 'stdout', message: `✓ Container was not running\n`, timestamp: new Date() });
           }
           
           await existingContainer.remove({ force: true });
           logs.push({ type: 'stdout', message: `✓ Old container removed\n`, timestamp: new Date() });
         } catch (e) {
-          // Container doesn't exist, that's fine
-          logs.push({ type: 'stdout', message: `✓ No existing container with this name\n`, timestamp: new Date() });
+          logs.push({ type: 'stdout', message: `✓ No existing container\n`, timestamp: new Date() });
         }
         
-        // Run the container
         logs.push({ type: 'stdout', message: '\n🚀 Starting container...\n', timestamp: new Date() });
         
         const container = await docker.createContainer({
           Image: imageName,
           name: containerName,
-          ExposedPorts: {
-            [`${port}/tcp`]: {}
-          },
+          ExposedPorts: { [`${port}/tcp`]: {} },
           HostConfig: {
-            PortBindings: {
-              [`${port}/tcp`]: [{ HostPort: port }]
-            },
-            RestartPolicy: {
-              Name: 'unless-stopped'
-            }
+            PortBindings: { [`${port}/tcp`]: [{ HostPort: port }] },
+            RestartPolicy: { Name: 'unless-stopped' }
           }
         });
         
@@ -348,14 +433,14 @@ router.post('/docker', auth, async (req, res) => {
         logs.push({ type: 'stdout', message: `✓ Container started: ${containerName}\n`, timestamp: new Date() });
         logs.push({ type: 'stdout', message: `✓ Container ID: ${container.id.substring(0, 12)}\n`, timestamp: new Date() });
         logs.push({ type: 'stdout', message: `✓ Access at: http://localhost:${port}\n`, timestamp: new Date() });
-        logs.push({ type: 'stdout', message: `\n🎉 Container is now running!\n`, timestamp: new Date() });
-        logs.push({ type: 'stdout', message: `📊 Check your dashboard to see it listed\n`, timestamp: new Date() });
-        logs.push({ type: 'stdout', message: `📂 Dockerfile available at: ~/Generator/docker/Dockerfile\n`, timestamp: new Date() });
+        logs.push({ type: 'stdout', message: `\n🎉 Container running!\n`, timestamp: new Date() });
+        logs.push({ type: 'stdout', message: `📊 Check dashboard\n`, timestamp: new Date() });
+        logs.push({ type: 'stdout', message: `📂 Dockerfile: ~/Generator/docker/Dockerfile\n`, timestamp: new Date() });
         
         res.json({
           success: true,
           logs,
-          message: 'Container deployed and running successfully!',
+          message: 'Container deployed!',
           filePath: `~/Generator/docker/Dockerfile`,
           containerName,
           containerId: container.id,
@@ -369,22 +454,21 @@ router.post('/docker', auth, async (req, res) => {
         res.json({
           success: false,
           logs,
-          message: 'Build or run failed. Check logs for details.',
+          message: 'Build/run failed',
           filePath: `~/Generator/docker/Dockerfile`
         });
       }
     } else {
-      // Deploy only mode
-      logs.push({ type: 'stdout', message: '\n📝 Note: To build this image, you need to:\n', timestamp: new Date() });
-      logs.push({ type: 'stdout', message: '  1. Copy your application files to ~/Generator/docker/\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '\n📝 To build:\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '  1. Copy app files to ~/Generator/docker/\n', timestamp: new Date() });
       logs.push({ type: 'stdout', message: '  2. Run: cd ~/Generator/docker && docker build -t my-app .\n', timestamp: new Date() });
       logs.push({ type: 'stdout', message: `\n🎉 Deployment completed!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 Dockerfile available at: ~/Generator/docker/Dockerfile\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/docker/Dockerfile\n`, timestamp: new Date() });
       
       res.json({
         success: true,
         logs,
-        message: 'Dockerfile deployed and validated successfully!',
+        message: 'Dockerfile deployed!',
         filePath: `~/Generator/docker/Dockerfile`
       });
     }
@@ -399,310 +483,265 @@ router.post('/docker', auth, async (req, res) => {
   }
 });
 
-// Deploy Terraform file
+// Deploy Terraform
 router.post('/terraform', auth, async (req, res) => {
   try {
     const { content } = req.body;
-    
     const terraformDir = path.join(GENERATOR_BASE_PATH, 'terraform');
     await ensureDir(terraformDir);
-    
     const tfPath = path.join(terraformDir, 'main.tf');
     
     const logs = [
-      { type: 'stdout', message: '🚀 Starting Terraform deployment...\n', timestamp: new Date() },
-      { type: 'stdout', message: `📁 Creating directory: ${terraformDir}\n`, timestamp: new Date() }
+      { type: 'stdout', message: '🚀 Terraform deployment...\n', timestamp: new Date() },
+      { type: 'stdout', message: `📁 ${terraformDir}\n`, timestamp: new Date() }
     ];
     
     await fs.writeFile(tfPath, content);
-    logs.push({ type: 'stdout', message: `📝 Terraform file saved to: ${tfPath}\n`, timestamp: new Date() });
-    logs.push({ type: 'stdout', message: `✓ File written successfully\n\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `📝 ${tfPath}\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `✓ Written\n\n`, timestamp: new Date() });
+    logger.info(`Terraform saved to ${tfPath}`);
     
-    logger.info(`Terraform file saved to ${tfPath}`);
-    
-    // Run terraform commands
-    logs.push({ type: 'stdout', message: '🔧 Running terraform init...\n', timestamp: new Date() });
+    logs.push({ type: 'stdout', message: '🔧 terraform init...\n', timestamp: new Date() });
     const initResult = await executeWithLogs('terraform init', terraformDir);
     logs.push(...initResult.logs);
     
     if (initResult.success) {
-      logs.push({ type: 'stdout', message: '\n✓ Terraform init completed\n', timestamp: new Date() });
-      logs.push({ type: 'stdout', message: '\n🔍 Running terraform validate...\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '\n✓ Init completed\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '\n🔍 terraform validate...\n', timestamp: new Date() });
       
       const validateResult = await executeWithLogs('terraform validate', terraformDir);
       logs.push(...validateResult.logs);
       
       if (validateResult.success) {
-        logs.push({ type: 'stdout', message: '\n✓ Terraform validation passed\n', timestamp: new Date() });
-        logs.push({ type: 'stdout', message: `\n🎉 Deployment completed!\n`, timestamp: new Date() });
-        logs.push({ type: 'stdout', message: `📂 Terraform config available at: ~/Generator/terraform/main.tf\n`, timestamp: new Date() });
+        logs.push({ type: 'stdout', message: '\n✓ Validated\n', timestamp: new Date() });
+        logs.push({ type: 'stdout', message: `\n🎉 Done!\n`, timestamp: new Date() });
+        logs.push({ type: 'stdout', message: `📂 ~/Generator/terraform/main.tf\n`, timestamp: new Date() });
       }
       
       res.json({
         success: validateResult.success,
         logs,
-        message: validateResult.success ? 'Terraform deployed and validated!' : 'Validation failed',
+        message: validateResult.success ? 'Terraform deployed!' : 'Validation failed',
         filePath: `~/Generator/terraform/main.tf`
       });
     } else {
-      logs.push({ type: 'stdout', message: `\n🎉 File deployed!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 Terraform config available at: ~/Generator/terraform/main.tf\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `\n⚠ Note: Terraform init failed. File is saved but not validated.\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n🎉 Deployed!\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/terraform/main.tf\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n⚠ Init failed\n`, timestamp: new Date() });
       
       res.json({
         success: true,
         logs,
-        message: 'Terraform file deployed (validation skipped)',
+        message: 'Terraform deployed (validation skipped)',
         filePath: `~/Generator/terraform/main.tf`
       });
     }
-    
   } catch (error) {
-    logger.error('Terraform deployment error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: error.message,
-      logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }]
-    });
+    logger.error('Terraform error:', error);
+    res.status(500).json({ success: false, error: error.message, logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }] });
   }
 });
 
-// Deploy Kubernetes manifest
+// Deploy Kubernetes
 router.post('/kubernetes', auth, async (req, res) => {
   try {
     const { content } = req.body;
-    
     const k8sDir = path.join(GENERATOR_BASE_PATH, 'kubernetes');
     await ensureDir(k8sDir);
-    
     const manifestPath = path.join(k8sDir, 'deployment.yaml');
     
     const logs = [
-      { type: 'stdout', message: '🚀 Starting Kubernetes deployment...\n', timestamp: new Date() },
-      { type: 'stdout', message: `📁 Creating directory: ${k8sDir}\n`, timestamp: new Date() }
+      { type: 'stdout', message: '🚀 Kubernetes deployment...\n', timestamp: new Date() },
+      { type: 'stdout', message: `📁 ${k8sDir}\n`, timestamp: new Date() }
     ];
     
     await fs.writeFile(manifestPath, content);
-    logs.push({ type: 'stdout', message: `📝 Manifest saved to: ${manifestPath}\n`, timestamp: new Date() });
-    logs.push({ type: 'stdout', message: `✓ File written successfully\n\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `📝 ${manifestPath}\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `✓ Written\n\n`, timestamp: new Date() });
+    logger.info(`K8s saved to ${manifestPath}`);
     
-    logger.info(`Kubernetes manifest saved to ${manifestPath}`);
-    
-    logs.push({ type: 'stdout', message: '🔍 Validating manifest...\n', timestamp: new Date() });
-    
+    logs.push({ type: 'stdout', message: '🔍 Validating...\n', timestamp: new Date() });
     const result = await executeWithLogs(`kubectl apply -f ${manifestPath} --dry-run=client`, k8sDir);
     logs.push(...result.logs);
     
     if (result.success) {
-      logs.push({ type: 'stdout', message: '\n✓ Manifest validation passed\n', timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `\n🎉 Deployment completed!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 Manifest available at: ~/Generator/kubernetes/deployment.yaml\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '\n✓ Validated\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n🎉 Done!\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/kubernetes/deployment.yaml\n`, timestamp: new Date() });
     } else {
-      logs.push({ type: 'stdout', message: `\n🎉 File deployed!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 Manifest available at: ~/Generator/kubernetes/deployment.yaml\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `\n⚠ Note: Validation failed or kubectl not available.\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n🎉 Deployed!\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/kubernetes/deployment.yaml\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n⚠ Validation failed\n`, timestamp: new Date() });
     }
     
     res.json({
       success: true,
       logs,
-      message: result.success ? 'Kubernetes manifest deployed and validated!' : 'Manifest deployed (validation skipped)',
+      message: result.success ? 'K8s deployed!' : 'Deployed (validation skipped)',
       filePath: `~/Generator/kubernetes/deployment.yaml`
     });
-    
   } catch (error) {
-    logger.error('Kubernetes deployment error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: error.message,
-      logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }]
-    });
+    logger.error('K8s error:', error);
+    res.status(500).json({ success: false, error: error.message, logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }] });
   }
 });
 
-// Deploy Helm chart
+// Deploy Helm
 router.post('/helm', auth, async (req, res) => {
   try {
     const { content } = req.body;
-    
     const helmDir = path.join(GENERATOR_BASE_PATH, 'helm');
     const chartDir = path.join(helmDir, 'mychart');
     await ensureDir(chartDir);
     
     const logs = [
-      { type: 'stdout', message: '🚀 Starting Helm deployment...\n', timestamp: new Date() },
-      { type: 'stdout', message: `📁 Creating directory: ${chartDir}\n`, timestamp: new Date() }
+      { type: 'stdout', message: '🚀 Helm deployment...\n', timestamp: new Date() },
+      { type: 'stdout', message: `📁 ${chartDir}\n`, timestamp: new Date() }
     ];
     
-    // Parse Chart.yaml and values.yaml
     const parts = content.split('---');
     const chartYaml = parts[0].trim();
     const valuesYaml = parts[1] ? parts[1].trim() : '';
     
     await fs.writeFile(path.join(chartDir, 'Chart.yaml'), chartYaml);
-    logs.push({ type: 'stdout', message: `📝 Chart.yaml saved\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `📝 Chart.yaml\n`, timestamp: new Date() });
     
     if (valuesYaml) {
       await fs.writeFile(path.join(chartDir, 'values.yaml'), valuesYaml);
-      logs.push({ type: 'stdout', message: `📝 values.yaml saved\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📝 values.yaml\n`, timestamp: new Date() });
     }
     
-    logs.push({ type: 'stdout', message: `✓ Files written successfully\n\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `✓ Written\n\n`, timestamp: new Date() });
+    logger.info(`Helm saved to ${chartDir}`);
     
-    logger.info(`Helm chart saved to ${chartDir}`);
-    
-    logs.push({ type: 'stdout', message: '🔍 Linting chart...\n', timestamp: new Date() });
-    
+    logs.push({ type: 'stdout', message: '🔍 Linting...\n', timestamp: new Date() });
     const result = await executeWithLogs(`helm lint ${chartDir}`, helmDir);
     logs.push(...result.logs);
     
     if (result.success) {
-      logs.push({ type: 'stdout', message: '\n✓ Chart lint passed\n', timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `\n🎉 Deployment completed!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 Chart available at: ~/Generator/helm/mychart/\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '\n✓ Lint passed\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n🎉 Done!\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/helm/mychart/\n`, timestamp: new Date() });
     } else {
-      logs.push({ type: 'stdout', message: `\n🎉 Files deployed!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 Chart available at: ~/Generator/helm/mychart/\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `\n⚠ Note: Linting failed or helm not available.\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n🎉 Deployed!\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/helm/mychart/\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n⚠ Lint failed\n`, timestamp: new Date() });
     }
     
     res.json({
       success: true,
       logs,
-      message: result.success ? 'Helm chart deployed and validated!' : 'Helm chart deployed (linting skipped)',
+      message: result.success ? 'Helm deployed!' : 'Deployed (linting skipped)',
       filePath: `~/Generator/helm/mychart/`
     });
-    
   } catch (error) {
-    logger.error('Helm deployment error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: error.message,
-      logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }]
-    });
+    logger.error('Helm error:', error);
+    res.status(500).json({ success: false, error: error.message, logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }] });
   }
 });
 
-// Deploy ArgoCD application
+// Deploy ArgoCD
 router.post('/argocd', auth, async (req, res) => {
   try {
     const { content } = req.body;
-    
     const argocdDir = path.join(GENERATOR_BASE_PATH, 'argocd');
     await ensureDir(argocdDir);
-    
     const manifestPath = path.join(argocdDir, 'application.yaml');
     
     const logs = [
-      { type: 'stdout', message: '🚀 Starting ArgoCD deployment...\n', timestamp: new Date() },
-      { type: 'stdout', message: `📁 Creating directory: ${argocdDir}\n`, timestamp: new Date() }
+      { type: 'stdout', message: '🚀 ArgoCD deployment...\n', timestamp: new Date() },
+      { type: 'stdout', message: `📁 ${argocdDir}\n`, timestamp: new Date() }
     ];
     
     await fs.writeFile(manifestPath, content);
-    logs.push({ type: 'stdout', message: `📝 Application manifest saved to: ${manifestPath}\n`, timestamp: new Date() });
-    logs.push({ type: 'stdout', message: `✓ File written successfully\n\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `📝 ${manifestPath}\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `✓ Written\n\n`, timestamp: new Date() });
+    logger.info(`ArgoCD saved to ${manifestPath}`);
     
-    logger.info(`ArgoCD manifest saved to ${manifestPath}`);
-    
-    logs.push({ type: 'stdout', message: '🔍 Validating manifest...\n', timestamp: new Date() });
-    
+    logs.push({ type: 'stdout', message: '🔍 Validating...\n', timestamp: new Date() });
     const result = await executeWithLogs(`kubectl apply -f ${manifestPath} --dry-run=client`, argocdDir);
     logs.push(...result.logs);
     
     if (result.success) {
-      logs.push({ type: 'stdout', message: '\n✓ Manifest validation passed\n', timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `\n🎉 Deployment completed!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 Application available at: ~/Generator/argocd/application.yaml\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '\n✓ Validated\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n🎉 Done!\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/argocd/application.yaml\n`, timestamp: new Date() });
     } else {
-      logs.push({ type: 'stdout', message: `\n🎉 File deployed!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 Application available at: ~/Generator/argocd/application.yaml\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `\n⚠ Note: Validation failed or kubectl not available.\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n🎉 Deployed!\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/argocd/application.yaml\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n⚠ Validation failed\n`, timestamp: new Date() });
     }
     
     res.json({
       success: true,
       logs,
-      message: result.success ? 'ArgoCD application deployed and validated!' : 'Application deployed (validation skipped)',
+      message: result.success ? 'ArgoCD deployed!' : 'Deployed (validation skipped)',
       filePath: `~/Generator/argocd/application.yaml`
     });
-    
   } catch (error) {
-    logger.error('ArgoCD deployment error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: error.message,
-      logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }]
-    });
+    logger.error('ArgoCD error:', error);
+    res.status(500).json({ success: false, error: error.message, logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }] });
   }
 });
 
-// Deploy Jenkins pipeline
+// Deploy Jenkins
 router.post('/jenkins', auth, async (req, res) => {
   try {
     const { content } = req.body;
-    
     const jenkinsDir = path.join(GENERATOR_BASE_PATH, 'jenkins');
     await ensureDir(jenkinsDir);
-    
     const jenkinsfilePath = path.join(jenkinsDir, 'Jenkinsfile');
     
     const logs = [
-      { type: 'stdout', message: '🚀 Starting Jenkins deployment...\n', timestamp: new Date() },
-      { type: 'stdout', message: `📁 Creating directory: ${jenkinsDir}\n`, timestamp: new Date() }
+      { type: 'stdout', message: '🚀 Jenkins deployment...\n', timestamp: new Date() },
+      { type: 'stdout', message: `📁 ${jenkinsDir}\n`, timestamp: new Date() }
     ];
     
     await fs.writeFile(jenkinsfilePath, content);
-    logs.push({ type: 'stdout', message: `📝 Jenkinsfile saved to: ${jenkinsfilePath}\n`, timestamp: new Date() });
-    logs.push({ type: 'stdout', message: `✓ File written successfully\n\n`, timestamp: new Date() });
-    
+    logs.push({ type: 'stdout', message: `📝 ${jenkinsfilePath}\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `✓ Written\n\n`, timestamp: new Date() });
     logger.info(`Jenkinsfile saved to ${jenkinsfilePath}`);
     
     logs.push({ type: 'stdout', message: '🔍 Checking syntax...\n', timestamp: new Date() });
     
     let success = true;
-    
     if (!content.includes('pipeline')) {
-      logs.push({ type: 'stderr', message: '✗ Missing pipeline block\n', timestamp: new Date() });
+      logs.push({ type: 'stderr', message: '✗ Missing pipeline\n', timestamp: new Date() });
       success = false;
     } else {
-      logs.push({ type: 'stdout', message: '✓ Pipeline block found\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '✓ Pipeline found\n', timestamp: new Date() });
     }
     
     if (!content.includes('agent')) {
-      logs.push({ type: 'stderr', message: '✗ Missing agent declaration\n', timestamp: new Date() });
+      logs.push({ type: 'stderr', message: '✗ Missing agent\n', timestamp: new Date() });
       success = false;
     } else {
-      logs.push({ type: 'stdout', message: '✓ Agent declaration found\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '✓ Agent found\n', timestamp: new Date() });
     }
     
     if (!content.includes('stages')) {
-      logs.push({ type: 'stderr', message: '✗ Missing stages block\n', timestamp: new Date() });
+      logs.push({ type: 'stderr', message: '✗ Missing stages\n', timestamp: new Date() });
       success = false;
     } else {
-      logs.push({ type: 'stdout', message: '✓ Stages block found\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '✓ Stages found\n', timestamp: new Date() });
     }
     
     if (success) {
-      logs.push({ type: 'stdout', message: '\n✓ Syntax validation passed\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '\n✓ Syntax OK\n', timestamp: new Date() });
     }
     
-    logs.push({ type: 'stdout', message: `\n🎉 Deployment completed!\n`, timestamp: new Date() });
-    logs.push({ type: 'stdout', message: `📂 Jenkinsfile available at: ~/Generator/jenkins/Jenkinsfile\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `\n🎉 Done!\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `📂 ~/Generator/jenkins/Jenkinsfile\n`, timestamp: new Date() });
     
     res.json({
       success: true,
       logs,
-      message: success ? 'Jenkinsfile deployed and validated!' : 'Jenkinsfile deployed (validation warnings)',
+      message: success ? 'Jenkinsfile deployed!' : 'Deployed (warnings)',
       filePath: `~/Generator/jenkins/Jenkinsfile`
     });
-    
   } catch (error) {
-    logger.error('Jenkins deployment error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: error.message,
-      logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }]
-    });
+    logger.error('Jenkins error:', error);
+    res.status(500).json({ success: false, error: error.message, logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }] });
   }
 });
 
