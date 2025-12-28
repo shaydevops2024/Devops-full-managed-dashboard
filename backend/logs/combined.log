@@ -569,3 +569,37 @@
 {"level":"info","message":"Found helm at /host/usr/local/bin/helm","timestamp":"2025-12-28T10:15:15.961Z"}
 {"level":"info","message":"Got version for helm from /host/usr/local/bin/helm: v3.17.1+g980d8ac","timestamp":"2025-12-28T10:15:16.120Z"}
 {"level":"info","message":"Tool check result: helm - Installed: true, Version: v3.17.1+g980d8ac","timestamp":"2025-12-28T10:15:16.121Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-28T11:24:14.092Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-28T11:24:14.094Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-28T11:24:14.149Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Port: 3000","timestamp":"2025-12-28T11:24:24.362Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-28T11:24:24.365Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Port: 3000","timestamp":"2025-12-28T11:24:39.113Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-28T11:24:39.115Z"}
+{"json":{"message":"failed to set up container networking: driver failed programming external connectivity on endpoint test13 (83e663ee2ca100a33c1f7d719c9d346b95fed3ea1f5e84dca7a5537f5b1af649): Bind for 0.0.0.0:3000 failed: port is already allocated"},"level":"error","message":"Docker build/run error: (HTTP code 500) server error - failed to set up container networking: driver failed programming external connectivity on endpoint test13 (83e663ee2ca100a33c1f7d719c9d346b95fed3ea1f5e84dca7a5537f5b1af649): Bind for 0.0.0.0:3000 failed: port is already allocated ","reason":"server error","stack":"Error: (HTTP code 500) server error - failed to set up container networking: driver failed programming external connectivity on endpoint test13 (83e663ee2ca100a33c1f7d719c9d346b95fed3ea1f5e84dca7a5537f5b1af649): Bind for 0.0.0.0:3000 failed: port is already allocated \n    at /app/node_modules/docker-modem/lib/modem.js:383:17\n    at getCause (/app/node_modules/docker-modem/lib/modem.js:418:7)\n    at Modem.buildPayload (/app/node_modules/docker-modem/lib/modem.js:379:5)\n    at IncomingMessage.<anonymous> (/app/node_modules/docker-modem/lib/modem.js:347:16)\n    at IncomingMessage.emit (node:events:529:35)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)","statusCode":500,"timestamp":"2025-12-28T11:24:39.509Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Port: 3000","timestamp":"2025-12-28T11:25:10.163Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-28T11:25:10.164Z"}
+{"json":{"message":"failed to set up container networking: driver failed programming external connectivity on endpoint test13 (d577abff89025f31b8ae199cc6a49d203a00fb3b67a5b6d4ea9e5fd9bae6b083): Bind for 0.0.0.0:3000 failed: port is already allocated"},"level":"error","message":"Docker build/run error: (HTTP code 500) server error - failed to set up container networking: driver failed programming external connectivity on endpoint test13 (d577abff89025f31b8ae199cc6a49d203a00fb3b67a5b6d4ea9e5fd9bae6b083): Bind for 0.0.0.0:3000 failed: port is already allocated ","reason":"server error","stack":"Error: (HTTP code 500) server error - failed to set up container networking: driver failed programming external connectivity on endpoint test13 (d577abff89025f31b8ae199cc6a49d203a00fb3b67a5b6d4ea9e5fd9bae6b083): Bind for 0.0.0.0:3000 failed: port is already allocated \n    at /app/node_modules/docker-modem/lib/modem.js:383:17\n    at getCause (/app/node_modules/docker-modem/lib/modem.js:418:7)\n    at Modem.buildPayload (/app/node_modules/docker-modem/lib/modem.js:379:5)\n    at IncomingMessage.<anonymous> (/app/node_modules/docker-modem/lib/modem.js:347:16)\n    at IncomingMessage.emit (node:events:529:35)\n    at endReadableNT (node:internal/streams/readable:1400:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)","statusCode":500,"timestamp":"2025-12-28T11:25:10.594Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-28T11:31:31.783Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-28T11:31:31.786Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-28T11:31:31.823Z"}
+{"level":"info","message":"Attempting to delete container: 7a7677af3204959e1d9918645bf9996e4dcbb6ed83ab97c3382dea8d90c59588","timestamp":"2025-12-28T11:31:44.753Z"}
+{"level":"info","message":"Container deleted successfully: 7a7677af3204959e1d9918645bf9996e4dcbb6ed83ab97c3382dea8d90c59588","timestamp":"2025-12-28T11:31:44.776Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Port: 3000","timestamp":"2025-12-28T11:31:56.176Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-28T11:31:56.177Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Port: 3000","timestamp":"2025-12-28T11:32:07.456Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-28T11:32:07.458Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Port: 3000","timestamp":"2025-12-28T11:32:12.629Z"}
+{"level":"info","message":"Dockerfile saved to /generator/docker/Dockerfile","timestamp":"2025-12-28T11:32:12.631Z"}
+{"level":"info","message":"Container stopped: 3a7cd0823ff46b03788c44135b1e84c74a3b2d962a585e33e01cceb41f49cd4c","timestamp":"2025-12-28T11:32:37.731Z"}
+{"level":"info","message":"Container stopped: b49c6b0e5be6c5708427cf67a1481be3bda8abdaa8b59b12184db6f0c276e0f8","timestamp":"2025-12-28T11:32:39.898Z"}
+{"level":"info","message":"Container stopped: b281ca82dcda345e6af7187d578e5884c1c3743f9af9576c7b287a81e5f26a4a","timestamp":"2025-12-28T11:32:41.216Z"}
+{"level":"info","message":"Container stopped: 089816f3810016a8b4615c040ba4f1ae5991e4d41c155973ae37efa33c29b24b","timestamp":"2025-12-28T11:32:42.253Z"}
+{"level":"info","message":"Attempting to delete container: 3a7cd0823ff46b03788c44135b1e84c74a3b2d962a585e33e01cceb41f49cd4c","timestamp":"2025-12-28T11:32:42.404Z"}
+{"level":"info","message":"Container deleted successfully: 3a7cd0823ff46b03788c44135b1e84c74a3b2d962a585e33e01cceb41f49cd4c","timestamp":"2025-12-28T11:32:42.434Z"}
+{"level":"info","message":"Attempting to delete container: b49c6b0e5be6c5708427cf67a1481be3bda8abdaa8b59b12184db6f0c276e0f8","timestamp":"2025-12-28T11:32:44.938Z"}
+{"level":"info","message":"Container deleted successfully: b49c6b0e5be6c5708427cf67a1481be3bda8abdaa8b59b12184db6f0c276e0f8","timestamp":"2025-12-28T11:32:44.973Z"}
+{"level":"info","message":"Attempting to delete container: b281ca82dcda345e6af7187d578e5884c1c3743f9af9576c7b287a81e5f26a4a","timestamp":"2025-12-28T11:32:46.639Z"}
+{"level":"info","message":"Container deleted successfully: b281ca82dcda345e6af7187d578e5884c1c3743f9af9576c7b287a81e5f26a4a","timestamp":"2025-12-28T11:32:46.660Z"}
+{"level":"info","message":"Attempting to delete container: 089816f3810016a8b4615c040ba4f1ae5991e4d41c155973ae37efa33c29b24b","timestamp":"2025-12-28T11:32:48.871Z"}
+{"level":"info","message":"Container deleted successfully: 089816f3810016a8b4615c040ba4f1ae5991e4d41c155973ae37efa33c29b24b","timestamp":"2025-12-28T11:32:48.902Z"}

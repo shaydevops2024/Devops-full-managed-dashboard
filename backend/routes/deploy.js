@@ -421,9 +421,7 @@ router.post('/docker', auth, async (req, res) => {
         const container = await docker.createContainer({
           Image: imageName,
           name: containerName,
-          ExposedPorts: { [`${port}/tcp`]: {} },
           HostConfig: {
-            PortBindings: { [`${port}/tcp`]: [{ HostPort: port }] },
             RestartPolicy: { Name: 'unless-stopped' }
           }
         });
