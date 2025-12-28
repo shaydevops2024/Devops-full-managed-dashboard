@@ -1,0 +1,169 @@
+
+version: '3.8'
+
+
+
+services:
+
+  # Test Container 1 - No port mapping
+
+  test1:
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile
+
+    container_name: test1
+
+    restart: unless-stopped
+
+    # No ports defined = no external access = no conflicts!
+
+
+
+  # Test Container 2 - No port mapping
+
+  test2:
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile
+
+    container_name: test2
+
+    restart: unless-stopped
+
+
+
+  # Test Container 3 - No port mapping
+
+  test3:
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile
+
+    container_name: test3
+
+    restart: unless-stopped
+
+
+
+  # Test Container 4 - Auto-assigned ports
+
+  test4:
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile
+
+    container_name: test4
+
+    restart: unless-stopped
+
+    ports:
+
+      - "5001:4444"  # If you need external access, specify unique port
+
+
+
+  # Test Container 5 - Auto-assigned ports
+
+  test5:
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile
+
+    container_name: test5
+
+    restart: unless-stopped
+
+    ports:
+
+      - "5002:4444"  # Different host port
+
+
+
+  # Add as many as you want without ports...
+
+  test6:
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile
+
+    container_name: test6
+
+    restart: unless-stopped
+
+
+
+  test7:
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile
+
+    container_name: test7
+
+    restart: unless-stopped
+
+
+
+  test8:
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile
+
+    container_name: test8
+
+    restart: unless-stopped
+
+
+
+  test9:
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile
+
+    container_name: test9
+
+    restart: unless-stopped
+
+
+
+  test10:
+
+    build:
+
+      context: .
+
+      dockerfile: Dockerfile
+
+    container_name: test10
+
+    restart: unless-stopped
+
+
+

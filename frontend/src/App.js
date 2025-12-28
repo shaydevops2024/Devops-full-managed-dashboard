@@ -1,3 +1,4 @@
+
 // /home/claude/devops-dashboard/frontend/src/App.js
 
 import React from 'react';
@@ -15,6 +16,10 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 
 import FileGenerator from './pages/FileGenerator';
+
+import UploadFiles from './pages/UploadFiles';
+
+import FileExamples from './pages/FileExamples';
 
 import DockerGenerator from './pages/tools/DockerGenerator';
 
@@ -40,21 +45,7 @@ function PrivateRoute({ children }) {
 
     return (
 
-      <div style={{ 
-
-        minHeight: '100vh', 
-
-        display: 'flex', 
-
-        alignItems: 'center', 
-
-        justifyContent: 'center',
-
-        background: '#1a1a2e',
-
-        color: '#fff'
-
-      }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a1a2e', color: '#fff' }}>
 
         Loading...
 
@@ -88,149 +79,27 @@ function App() {
 
           <Route path="/register" element={<Register />} />
 
-          <Route
+          <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
 
-            path="/"
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
 
-            element={
+          <Route path="/files" element={<PrivateRoute><FileGenerator /></PrivateRoute>} />
 
-              <PrivateRoute>
+          <Route path="/upload-files" element={<PrivateRoute><UploadFiles /></PrivateRoute>} />
 
-                <Dashboard />
+          <Route path="/file-examples" element={<PrivateRoute><FileExamples /></PrivateRoute>} />
 
-              </PrivateRoute>
+          <Route path="/files/docker" element={<PrivateRoute><DockerGenerator /></PrivateRoute>} />
 
-            }
+          <Route path="/files/terraform" element={<PrivateRoute><TerraformGenerator /></PrivateRoute>} />
 
-          />
+          <Route path="/files/kubernetes" element={<PrivateRoute><KubernetesGenerator /></PrivateRoute>} />
 
-          <Route
+          <Route path="/files/helm" element={<PrivateRoute><HelmGenerator /></PrivateRoute>} />
 
-            path="/dashboard"
+          <Route path="/files/argocd" element={<PrivateRoute><ArgoCDGenerator /></PrivateRoute>} />
 
-            element={
-
-              <PrivateRoute>
-
-                <Dashboard />
-
-              </PrivateRoute>
-
-            }
-
-          />
-
-          <Route
-
-            path="/files"
-
-            element={
-
-              <PrivateRoute>
-
-                <FileGenerator />
-
-              </PrivateRoute>
-
-            }
-
-          />
-
-          <Route
-
-            path="/files/docker"
-
-            element={
-
-              <PrivateRoute>
-
-                <DockerGenerator />
-
-              </PrivateRoute>
-
-            }
-
-          />
-
-          <Route
-
-            path="/files/terraform"
-
-            element={
-
-              <PrivateRoute>
-
-                <TerraformGenerator />
-
-              </PrivateRoute>
-
-            }
-
-          />
-
-          <Route
-
-            path="/files/kubernetes"
-
-            element={
-
-              <PrivateRoute>
-
-                <KubernetesGenerator />
-
-              </PrivateRoute>
-
-            }
-
-          />
-
-          <Route
-
-            path="/files/helm"
-
-            element={
-
-              <PrivateRoute>
-
-                <HelmGenerator />
-
-              </PrivateRoute>
-
-            }
-
-          />
-
-          <Route
-
-            path="/files/argocd"
-
-            element={
-
-              <PrivateRoute>
-
-                <ArgoCDGenerator />
-
-              </PrivateRoute>
-
-            }
-
-          />
-
-          <Route
-
-            path="/files/jenkins"
-
-            element={
-
-              <PrivateRoute>
-
-                <JenkinsGenerator />
-
-              </PrivateRoute>
-
-            }
-
-          />
+          <Route path="/files/jenkins" element={<PrivateRoute><JenkinsGenerator /></PrivateRoute>} />
 
         </Routes>
 
@@ -245,3 +114,4 @@ function App() {
 
 
 export default App;
+
