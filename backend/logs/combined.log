@@ -603,3 +603,73 @@
 {"level":"info","message":"Container deleted successfully: b281ca82dcda345e6af7187d578e5884c1c3743f9af9576c7b287a81e5f26a4a","timestamp":"2025-12-28T11:32:46.660Z"}
 {"level":"info","message":"Attempting to delete container: 089816f3810016a8b4615c040ba4f1ae5991e4d41c155973ae37efa33c29b24b","timestamp":"2025-12-28T11:32:48.871Z"}
 {"level":"info","message":"Container deleted successfully: 089816f3810016a8b4615c040ba4f1ae5991e4d41c155973ae37efa33c29b24b","timestamp":"2025-12-28T11:32:48.902Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-28T12:49:04.356Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-28T12:49:04.358Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-28T12:49:04.386Z"}
+{"level":"error","message":"Docker deployment error: internalPort is not defined","stack":"ReferenceError: internalPort is not defined\n    at /app/routes/deploy.js:326:61\n    at Layer.handle [as handle_request] (/app/node_modules/express/lib/router/layer.js:95:5)\n    at next (/app/node_modules/express/lib/router/route.js:149:13)\n    at auth (/app/middleware/auth.js:44:5)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2025-12-28T12:49:43.969Z"}
+{"level":"error","message":"Docker deployment error: internalPort is not defined","stack":"ReferenceError: internalPort is not defined\n    at /app/routes/deploy.js:326:61\n    at Layer.handle [as handle_request] (/app/node_modules/express/lib/router/layer.js:95:5)\n    at next (/app/node_modules/express/lib/router/route.js:149:13)\n    at auth (/app/middleware/auth.js:44:5)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2025-12-28T12:49:54.559Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-28T12:54:36.223Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-28T12:54:36.225Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-28T12:54:36.247Z"}
+{"level":"error","message":"Docker deployment error: internalPort is not defined","stack":"ReferenceError: internalPort is not defined\n    at /app/routes/deploy.js:326:61\n    at Layer.handle [as handle_request] (/app/node_modules/express/lib/router/layer.js:95:5)\n    at next (/app/node_modules/express/lib/router/route.js:149:13)\n    at auth (/app/middleware/auth.js:44:5)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2025-12-28T12:57:13.425Z"}
+{"level":"error","message":"Docker deployment error: internalPort is not defined","stack":"ReferenceError: internalPort is not defined\n    at /app/routes/deploy.js:326:61\n    at Layer.handle [as handle_request] (/app/node_modules/express/lib/router/layer.js:95:5)\n    at next (/app/node_modules/express/lib/router/route.js:149:13)\n    at auth (/app/middleware/auth.js:44:5)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2025-12-28T12:57:23.658Z"}
+{"level":"error","message":"Docker deployment error: internalPort is not defined","stack":"ReferenceError: internalPort is not defined\n    at /app/routes/deploy.js:326:61\n    at Layer.handle [as handle_request] (/app/node_modules/express/lib/router/layer.js:95:5)\n    at next (/app/node_modules/express/lib/router/route.js:149:13)\n    at auth (/app/middleware/auth.js:44:5)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)","timestamp":"2025-12-28T15:07:26.811Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-28T15:14:05.569Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-28T15:14:05.573Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-28T15:14:05.607Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-28T15:21:47.263Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-28T15:21:47.265Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-28T15:21:47.282Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Container: test1","timestamp":"2025-12-28T15:22:39.747Z"}
+{"level":"info","message":"Dockerfile saved to /generator/694fb017d76029aaec41de33/docker/Dockerfile","timestamp":"2025-12-28T15:22:39.756Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Container: test2","timestamp":"2025-12-28T15:22:49.195Z"}
+{"level":"info","message":"Dockerfile saved to /generator/694fb017d76029aaec41de33/docker/Dockerfile","timestamp":"2025-12-28T15:22:49.197Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Container: test3","timestamp":"2025-12-28T15:22:56.201Z"}
+{"level":"info","message":"Dockerfile saved to /generator/694fb017d76029aaec41de33/docker/Dockerfile","timestamp":"2025-12-28T15:22:56.204Z"}
+{"level":"info","message":"Attempting to delete container: 19110959ae23c74462c1edc81ad724988044e6fdd5ebd2a56311ee312d250f68","timestamp":"2025-12-28T15:24:08.541Z"}
+{"level":"info","message":"Container deleted successfully: 19110959ae23c74462c1edc81ad724988044e6fdd5ebd2a56311ee312d250f68","timestamp":"2025-12-28T15:24:08.570Z"}
+{"level":"info","message":"New user registered: shay.gu@iconductcloud.com","timestamp":"2025-12-28T15:24:46.419Z"}
+{"level":"info","message":"User logged in: test@test.com","timestamp":"2025-12-28T15:24:56.480Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-28T16:06:06.310Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-28T16:06:06.315Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-28T16:06:06.333Z"}
+{"level":"info","message":"Docker deployment - Mode: deploy-and-run, Container: test10","timestamp":"2025-12-28T16:06:44.214Z"}
+{"level":"info","message":"Dockerfile saved to /generator/694fb017d76029aaec41de33/docker/Dockerfile","timestamp":"2025-12-28T16:06:44.218Z"}
+{"level":"info","message":"Terraform config saved to /generator/694fb017d76029aaec41de33/terraform/main.tf","timestamp":"2025-12-28T16:06:59.012Z"}
+{"level":"info","message":"Executing: terraform init in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T16:06:59.012Z"}
+{"level":"info","message":"Executing: terraform plan in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T16:07:20.258Z"}
+{"level":"info","message":"Terraform config saved to /generator/694fb017d76029aaec41de33/terraform/main.tf","timestamp":"2025-12-28T16:07:39.076Z"}
+{"level":"info","message":"Executing: terraform init in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T16:07:39.077Z"}
+{"level":"info","message":"Executing: terraform plan in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T16:07:43.635Z"}
+{"level":"info","message":"Terraform config saved to /generator/694fb017d76029aaec41de33/terraform/main.tf","timestamp":"2025-12-28T16:07:58.725Z"}
+{"level":"info","message":"Executing: terraform init in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T16:07:58.726Z"}
+{"level":"info","message":"Executing: terraform apply -auto-approve in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T16:07:59.955Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-28T16:29:00.798Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-28T16:29:00.801Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-28T16:29:00.842Z"}
+{"level":"info","message":"Terraform config saved to /generator/694fb017d76029aaec41de33/terraform/main.tf","timestamp":"2025-12-28T16:29:27.835Z"}
+{"level":"info","message":"Executing: terraform init in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T16:29:27.835Z"}
+{"level":"info","message":"Executing: terraform plan in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T16:29:31.295Z"}
+{"level":"error","message":"Terraform apply error: cleanFilename is not defined","stack":"ReferenceError: cleanFilename is not defined\n    at /app/routes/deploy.js:725:52","timestamp":"2025-12-28T16:29:48.376Z"}
+{"level":"error","message":"Terraform apply error: cleanFilename is not defined","stack":"ReferenceError: cleanFilename is not defined\n    at /app/routes/deploy.js:725:52","timestamp":"2025-12-28T16:29:58.671Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-28T16:34:49.163Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-28T16:34:49.166Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-28T16:34:49.192Z"}
+{"level":"info","message":"Terraform config saved to /generator/694fb017d76029aaec41de33/terraform/main.tf","timestamp":"2025-12-28T16:34:53.644Z"}
+{"level":"info","message":"Executing: terraform init in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T16:34:53.644Z"}
+{"level":"info","message":"Executing: terraform plan in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T16:34:55.790Z"}
+{"level":"info","message":"Terraform config saved to /generator/694fb017d76029aaec41de33/terraform/main.tf","timestamp":"2025-12-28T16:35:03.347Z"}
+{"level":"info","message":"Executing: terraform init in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T16:35:03.348Z"}
+{"level":"info","message":"Executing: terraform apply -auto-approve in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T16:35:04.412Z"}
+{"level":"info","message":"Terraform config saved to /generator/694fb017d76029aaec41de33/terraform/main.tf","timestamp":"2025-12-28T16:35:33.586Z"}
+{"level":"info","message":"Executing: terraform init in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T16:35:33.586Z"}
+{"level":"info","message":"Executing: terraform apply -auto-approve in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T16:35:34.702Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-28T17:00:44.357Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-28T17:00:44.360Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-28T17:00:44.389Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-28T17:05:06.393Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-28T17:05:06.397Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-28T17:05:06.427Z"}
+{"level":"info","message":"Terraform config saved to /generator/694fb017d76029aaec41de33/terraform/main.tf","timestamp":"2025-12-28T17:05:23.285Z"}
+{"level":"info","message":"Executing: terraform init in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T17:05:23.286Z"}
+{"level":"info","message":"Executing: terraform apply -auto-approve in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T17:05:29.082Z"}

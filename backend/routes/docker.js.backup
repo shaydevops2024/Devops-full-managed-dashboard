@@ -1,4 +1,4 @@
-// backend/routes/docker.js - WITH HYBRID USER FILTER (shows old containers too)
+// backend/routes/docker.js
 
 const express = require('express');
 const router = express.Router();
@@ -11,23 +11,18 @@ const logger = require('../utils/logger');
 const execAsync = promisify(exec);
 const docker = new Docker();
 
-// Get all containers - HYBRID FILTER (shows user's + unlabeled legacy containers)
+// Get all containers (both running and stopped, but only recent ones)
 router.get('/containers', auth, async (req, res) => {
   try {
-    // Get ALL containers first
-    const allContainers = await docker.listContainers({ all: true });
-    
-    // Filter: show user's labeled containers OR unlabeled legacy containers
-    const containers = allContainers.filter(c => {
-      const createdBy = c.Labels?.createdBy;
-      // Show if: no label (legacy) OR labeled with current user
-      return !createdBy || createdBy === req.user._id.toString();
-    });
+    // Get all containers including stopped ones
+    const containers = await docker.listContainers({ all: true });
     
     // Filter out very old exited containers (older than 7 days)
     const sevenDaysAgo = Math.floor(Date.now() / 1000) - (7 * 24 * 60 * 60);
     const recentContainers = containers.filter(container => {
+      // Keep running containers
       if (container.State === 'running') return true;
+      // Keep recently stopped containers
       return container.Created > sevenDaysAgo;
     });
     
@@ -61,6 +56,7 @@ router.get('/containers', auth, async (req, res) => {
       })
     );
 
+    // Sort by running first, then by creation date
     containerDetails.sort((a, b) => {
       if (a.isRunning && !b.isRunning) return -1;
       if (!a.isRunning && b.isRunning) return 1;
@@ -74,17 +70,10 @@ router.get('/containers', auth, async (req, res) => {
   }
 });
 
-// Get Docker Compose services - HYBRID FILTER
+// Get Docker Compose services
 router.get('/compose/services', auth, async (req, res) => {
   try {
-    // Get ALL containers first
-    const allContainers = await docker.listContainers({ all: true });
-    
-    // Filter: show user's labeled containers OR unlabeled legacy containers
-    const containers = allContainers.filter(c => {
-      const createdBy = c.Labels?.createdBy;
-      return !createdBy || createdBy === req.user._id.toString();
-    });
+    const containers = await docker.listContainers({ all: true });
     
     const composeServices = containers
       .filter(c => c.Labels && (c.Labels['com.docker.compose.project'] || c.Labels['com.docker.compose.service']))
@@ -164,9 +153,11 @@ router.delete('/containers/:id', auth, async (req, res) => {
     
     const container = docker.getContainer(id);
     
+    // Check if container exists
     try {
       const containerInfo = await container.inspect();
       
+      // Check if container is running
       if (containerInfo.State.Running) {
         return res.status(400).json({ 
           success: false,
@@ -180,6 +171,7 @@ router.delete('/containers/:id', auth, async (req, res) => {
       });
     }
     
+    // Remove container
     await container.remove({ force: false });
     
     logger.info(`Container deleted successfully: ${id}`);

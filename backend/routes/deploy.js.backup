@@ -1,4 +1,4 @@
-// backend/routes/deploy.js - COMPLETE WITH USER ISOLATION + TERRAFORM RESOURCES
+// backend/routes/deploy.js - COMPLETE WITH TERRAFORM FILENAME SUPPORT
 
 const express = require('express');
 const router = express.Router();
@@ -112,9 +112,8 @@ const validateDockerfile = async (dockerfilePath) => {
   }
 };
 
-const createTestApp = async (dockerDir) => {
+const createTestApp = async (dockerDir, port) => {
   const logs = [];
-  const internalPort = 3000;
   
   logs.push({ type: 'stdout', message: '\n📦 Creating test application...\n', timestamp: new Date() });
   
@@ -134,7 +133,7 @@ const createTestApp = async (dockerDir) => {
   logs.push({ type: 'stdout', message: '✓ Created package.json\n', timestamp: new Date() });
   
   const indexJs = `const http = require('http');
-const port = ${internalPort};
+const port = ${port};
 
 const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/html' });
@@ -161,7 +160,7 @@ const server = http.createServer((req, res) => {
         <p>Container deployed from DevOps Dashboard</p>
         <p class="status">Status: Active ✓</p>
         <p style="margin-top: 40px; font-size: 0.9rem;">
-          Port: ${internalPort} (internal) | Generated: \${new Date().toLocaleString()}
+          Port: ${port} | Generated: \${new Date().toLocaleString()}
         </p>
       </body>
     </html>
@@ -169,7 +168,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(port, '0.0.0.0', () => {
-  console.log(\`App listening on internal port \${port}\`);
+  console.log(\`App listening on port \${port}\`);
 });
 `;
   
@@ -182,7 +181,7 @@ COPY package*.json ./
 RUN echo 'No dependencies to install'
 COPY . .
 RUN echo 'Build complete'
-EXPOSE ${internalPort}
+EXPOSE ${port}
 CMD ["node", "index.js"]`;
   
   await fs.writeFile(path.join(dockerDir, 'Dockerfile'), fixedDockerfile);
@@ -191,85 +190,6 @@ CMD ["node", "index.js"]`;
   
   return { success: true, logs };
 };
-
-// Helper function to group resources by dependencies
-function groupResourcesByRelationship(resources) {
-  const groups = [];
-  const processed = new Set();
-  
-  const resourceMap = new Map();
-  resources.forEach(r => resourceMap.set(r.fullName, r));
-  
-  resources.forEach(resource => {
-    if (processed.has(resource.fullName)) return;
-    
-    const group = {
-      id: `group_${groups.length}`,
-      resources: [resource],
-      type: resource.group
-    };
-    
-    processed.add(resource.fullName);
-    
-    const dependents = findDependentResources(resource, resourceMap, processed);
-    group.resources.push(...dependents);
-    
-    const dependencies = findResourceDependencies(resource, resources, resourceMap, processed);
-    group.resources.push(...dependencies);
-    
-    if (group.resources.length > 0) {
-      groups.push(group);
-    }
-  });
-  
-  resources.forEach(resource => {
-    if (!processed.has(resource.fullName)) {
-      groups.push({
-        id: `group_${groups.length}`,
-        resources: [resource],
-        type: resource.group
-      });
-      processed.add(resource.fullName);
-    }
-  });
-  
-  return groups;
-}
-
-function findDependentResources(resource, resourceMap, processed) {
-  const dependents = [];
-  
-  if (resource.dependencies && resource.dependencies.length > 0) {
-    resource.dependencies.forEach(dep => {
-      if (resourceMap.has(dep) && !processed.has(dep)) {
-        const depResource = resourceMap.get(dep);
-        dependents.push(depResource);
-        processed.add(dep);
-        
-        const nestedDeps = findDependentResources(depResource, resourceMap, processed);
-        dependents.push(...nestedDeps);
-      }
-    });
-  }
-  
-  return dependents;
-}
-
-function findResourceDependencies(resource, allResources, resourceMap, processed) {
-  const dependencies = [];
-  
-  allResources.forEach(r => {
-    if (r.dependencies && r.dependencies.includes(resource.fullName) && !processed.has(r.fullName)) {
-      dependencies.push(r);
-      processed.add(r.fullName);
-      
-      const nestedDeps = findResourceDependencies(r, allResources, resourceMap, processed);
-      dependencies.push(...nestedDeps);
-    }
-  });
-  
-  return dependencies;
-}
 
 // FIXED VALIDATION ROUTE
 router.post('/validate-dockerfile', auth, async (req, res) => {
@@ -321,6 +241,7 @@ router.post('/validate-dockerfile', auth, async (req, res) => {
         );
       });
 
+      // Check output array for errors
       if (output && Array.isArray(output)) {
         for (const item of output) {
           if (item.error || item.errorDetail) {
@@ -337,6 +258,7 @@ router.post('/validate-dockerfile', auth, async (req, res) => {
 
       logger.info('Build succeeded - verifying image exists');
 
+      // Verify image exists
       try {
         const image = docker.getImage(tempTag);
         await image.inspect();
@@ -398,12 +320,11 @@ router.post('/validate-dockerfile', auth, async (req, res) => {
 // Deploy Docker file
 router.post('/docker', auth, async (req, res) => {
   try {
-    const { content, mode = 'deploy', containerName = `generated-app-${Date.now()}` } = req.body;
+    const { content, mode = 'deploy', containerName = `generated-app-${Date.now()}`, port = '3000' } = req.body;
     
-    logger.info(`Docker deployment - Mode: ${mode}, Container: ${containerName}`);
+    logger.info(`Docker deployment - Mode: ${mode}, Port: ${port}`);
     
-    const userDir = path.join(GENERATOR_BASE_PATH, req.user._id.toString());
-    const dockerDir = path.join(userDir, 'docker');
+    const dockerDir = path.join(GENERATOR_BASE_PATH, 'docker');
     const created = await ensureDir(dockerDir);
     
     if (!created) {
@@ -436,14 +357,14 @@ router.post('/docker', auth, async (req, res) => {
         success: false,
         logs,
         message: 'Dockerfile validation failed',
-        filePath: `~/Generator/${req.user._id}/docker/Dockerfile`
+        filePath: `~/Generator/docker/Dockerfile`
       });
     }
     
     if (mode === 'deploy-and-run') {
       logs.push({ type: 'stdout', message: '\n🔨 Deploy & Run mode\n', timestamp: new Date() });
       
-      const appCreation = await createTestApp(dockerDir);
+      const appCreation = await createTestApp(dockerDir, port);
       logs.push(...appCreation.logs);
       
       if (!appCreation.success) {
@@ -451,7 +372,7 @@ router.post('/docker', auth, async (req, res) => {
           success: false,
           logs,
           message: 'Failed to create test application',
-          filePath: `~/Generator/${req.user._id}/docker/Dockerfile`
+          filePath: `~/Generator/docker/Dockerfile`
         });
       }
       
@@ -495,16 +416,11 @@ router.post('/docker', auth, async (req, res) => {
           logs.push({ type: 'stdout', message: `✓ No existing container\n`, timestamp: new Date() });
         }
         
-        logs.push({ type: 'stdout', message: '\n🚀 Starting container WITHOUT port mapping...\n', timestamp: new Date() });
-        logs.push({ type: 'stdout', message: '💡 No port conflicts possible!\n', timestamp: new Date() });
+        logs.push({ type: 'stdout', message: '\n🚀 Starting container...\n', timestamp: new Date() });
         
         const container = await docker.createContainer({
           Image: imageName,
           name: containerName,
-          Labels: {
-            'createdBy': req.user._id.toString(),
-            'createdByEmail': req.user.email
-          },
           HostConfig: {
             RestartPolicy: { Name: 'unless-stopped' }
           }
@@ -514,18 +430,19 @@ router.post('/docker', auth, async (req, res) => {
         
         logs.push({ type: 'stdout', message: `✓ Container started: ${containerName}\n`, timestamp: new Date() });
         logs.push({ type: 'stdout', message: `✓ Container ID: ${container.id.substring(0, 12)}\n`, timestamp: new Date() });
-        logs.push({ type: 'stdout', message: `✓ Running without external port (no conflicts!)\n`, timestamp: new Date() });
+        logs.push({ type: 'stdout', message: `✓ Access at: http://localhost:${port}\n`, timestamp: new Date() });
         logs.push({ type: 'stdout', message: `\n🎉 Container running!\n`, timestamp: new Date() });
-        logs.push({ type: 'stdout', message: `📊 Check dashboard to see it\n`, timestamp: new Date() });
-        logs.push({ type: 'stdout', message: `📂 Dockerfile: ~/Generator/${req.user._id}/docker/Dockerfile\n`, timestamp: new Date() });
+        logs.push({ type: 'stdout', message: `📊 Check dashboard\n`, timestamp: new Date() });
+        logs.push({ type: 'stdout', message: `📂 Dockerfile: ~/Generator/docker/Dockerfile\n`, timestamp: new Date() });
         
         res.json({
           success: true,
           logs,
           message: 'Container deployed!',
-          filePath: `~/Generator/${req.user._id}/docker/Dockerfile`,
+          filePath: `~/Generator/docker/Dockerfile`,
           containerName,
-          containerId: container.id
+          containerId: container.id,
+          port
         });
         
       } catch (buildError) {
@@ -536,21 +453,21 @@ router.post('/docker', auth, async (req, res) => {
           success: false,
           logs,
           message: 'Build/run failed',
-          filePath: `~/Generator/${req.user._id}/docker/Dockerfile`
+          filePath: `~/Generator/docker/Dockerfile`
         });
       }
     } else {
       logs.push({ type: 'stdout', message: '\n📝 To build:\n', timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `  1. Copy app files to ~/Generator/${req.user._id}/docker/\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `  2. Run: cd ~/Generator/${req.user._id}/docker && docker build -t my-app .\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '  1. Copy app files to ~/Generator/docker/\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '  2. Run: cd ~/Generator/docker && docker build -t my-app .\n', timestamp: new Date() });
       logs.push({ type: 'stdout', message: `\n🎉 Deployment completed!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 ~/Generator/${req.user._id}/docker/Dockerfile\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/docker/Dockerfile\n`, timestamp: new Date() });
       
       res.json({
         success: true,
         logs,
         message: 'Dockerfile deployed!',
-        filePath: `~/Generator/${req.user._id}/docker/Dockerfile`
+        filePath: `~/Generator/docker/Dockerfile`
       });
     }
     
@@ -564,14 +481,14 @@ router.post('/docker', auth, async (req, res) => {
   }
 });
 
-// Deploy Terraform
+// Deploy Terraform (UPDATED WITH FILENAME SUPPORT)
 router.post('/terraform', auth, async (req, res) => {
   try {
-    const { content, filename = 'main' } = req.body;
-    const userDir = path.join(GENERATOR_BASE_PATH, req.user._id.toString());
-    const terraformDir = path.join(userDir, 'terraform');
+    const { content, filename = 'main' } = req.body; // Accept filename parameter
+    const terraformDir = path.join(GENERATOR_BASE_PATH, 'terraform');
     await ensureDir(terraformDir);
     
+    // Use provided filename (without .tf extension if included)
     const cleanFilename = filename.trim().replace(/\.tf$/, '');
     const tfPath = path.join(terraformDir, `${cleanFilename}.tf`);
     
@@ -599,25 +516,25 @@ router.post('/terraform', auth, async (req, res) => {
       if (validateResult.success) {
         logs.push({ type: 'stdout', message: '\n✓ Validated\n', timestamp: new Date() });
         logs.push({ type: 'stdout', message: `\n🎉 Done!\n`, timestamp: new Date() });
-        logs.push({ type: 'stdout', message: `📂 ~/Generator/${req.user._id}/terraform/${cleanFilename}.tf\n`, timestamp: new Date() });
+        logs.push({ type: 'stdout', message: `📂 ~/Generator/terraform/${cleanFilename}.tf\n`, timestamp: new Date() });
       }
       
       res.json({
         success: validateResult.success,
         logs,
         message: validateResult.success ? 'Terraform deployed!' : 'Validation failed',
-        filePath: `~/Generator/${req.user._id}/terraform/${cleanFilename}.tf`
+        filePath: `~/Generator/terraform/${cleanFilename}.tf`
       });
     } else {
       logs.push({ type: 'stdout', message: `\n🎉 Deployed!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 ~/Generator/${req.user._id}/terraform/${cleanFilename}.tf\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/terraform/${cleanFilename}.tf\n`, timestamp: new Date() });
       logs.push({ type: 'stdout', message: `\n⚠ Init failed\n`, timestamp: new Date() });
       
       res.json({
         success: true,
         logs,
         message: 'Terraform deployed (validation skipped)',
-        filePath: `~/Generator/${req.user._id}/terraform/${cleanFilename}.tf`
+        filePath: `~/Generator/terraform/${cleanFilename}.tf`
       });
     }
   } catch (error) {
@@ -629,20 +546,19 @@ router.post('/terraform', auth, async (req, res) => {
 // Terraform Plan
 router.post('/terraform-plan', auth, async (req, res) => {
   try {
-    const { content, filename = 'main' } = req.body;
+    const { content } = req.body;
     
-    const userDir = path.join(GENERATOR_BASE_PATH, req.user._id.toString());
-    const terraformDir = path.join(userDir, 'terraform');
+    const terraformDir = path.join(GENERATOR_BASE_PATH, 'terraform');
     await ensureDir(terraformDir);
     
-    const cleanFilename = filename.trim().replace(/\.tf$/, '');
-    const tfPath = path.join(terraformDir, `${cleanFilename}.tf`);
+    const tfPath = path.join(terraformDir, 'main.tf');
     
     const logs = [
       { type: 'stdout', message: '🚀 Starting Terraform plan...\n', timestamp: new Date() },
       { type: 'stdout', message: `📁 Working directory: ${terraformDir}\n`, timestamp: new Date() }
     ];
     
+    // Clean directory - remove all .tf files to avoid duplicates
     try {
       const files = await fs.readdir(terraformDir);
       const tfFiles = files.filter(f => f.endsWith('.tf'));
@@ -650,7 +566,9 @@ router.post('/terraform-plan', auth, async (req, res) => {
         await fs.unlink(path.join(terraformDir, file));
         logs.push({ type: 'stdout', message: `🗑️  Removed old file: ${file}\n`, timestamp: new Date() });
       }
-    } catch (err) {}
+    } catch (err) {
+      // Directory might not exist yet, ignore
+    }
     
     await fs.writeFile(tfPath, content);
     logs.push({ type: 'stdout', message: `📝 Configuration saved to: ${tfPath}\n`, timestamp: new Date() });
@@ -658,6 +576,7 @@ router.post('/terraform-plan', auth, async (req, res) => {
     
     logger.info(`Terraform config saved to ${tfPath}`);
     
+    // Run terraform init
     logs.push({ type: 'stdout', message: '🔧 Running terraform init...\n', timestamp: new Date() });
     const initResult = await executeWithLogs('terraform init', terraformDir);
     logs.push(...initResult.logs);
@@ -673,19 +592,20 @@ router.post('/terraform-plan', auth, async (req, res) => {
     
     logs.push({ type: 'stdout', message: '\n✓ Terraform init completed\n', timestamp: new Date() });
     
+    // Run terraform plan
     logs.push({ type: 'stdout', message: '\n📊 Running terraform plan...\n', timestamp: new Date() });
     const planResult = await executeWithLogs('terraform plan', terraformDir);
     logs.push(...planResult.logs);
     
     if (planResult.success) {
       logs.push({ type: 'stdout', message: '\n✓ Terraform plan completed successfully\n', timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `\n📂 Configuration available at: ~/Generator/${req.user._id}/terraform/main.tf\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n📂 Configuration available at: ~/Generator/terraform/main.tf\n`, timestamp: new Date() });
       
       res.json({
         success: true,
         logs,
         message: 'Terraform plan completed successfully!',
-        filePath: `~/Generator/${req.user._id}/terraform/${cleanFilename}.tf`
+        filePath: `~/Generator/terraform/main.tf`
       });
     } else {
       logs.push({ type: 'stderr', message: '\n❌ Terraform plan failed\n', timestamp: new Date() });
@@ -694,7 +614,7 @@ router.post('/terraform-plan', auth, async (req, res) => {
         success: false,
         logs,
         message: 'Terraform plan failed. Check logs for details.',
-        filePath: `~/Generator/${req.user._id}/terraform/${cleanFilename}.tf`
+        filePath: `~/Generator/terraform/main.tf`
       });
     }
     
@@ -708,24 +628,22 @@ router.post('/terraform-plan', auth, async (req, res) => {
   }
 });
 
-// Terraform Apply
+// Terraform Apply (FIXED - Cleans directory first)
 router.post('/terraform-apply', auth, async (req, res) => {
   try {
-    const { content, filename = 'main' } = req.body;  // ← FIXED: Added filename parameter
+    const { content } = req.body;
     
-    const userDir = path.join(GENERATOR_BASE_PATH, req.user._id.toString());
-    const terraformDir = path.join(userDir, 'terraform');
+    const terraformDir = path.join(GENERATOR_BASE_PATH, 'terraform');
     await ensureDir(terraformDir);
     
-    const cleanFilename = filename.trim().replace(/\.tf$/, '');  // ← FIXED: Added this line
-    const tfPath = path.join(terraformDir, `${cleanFilename}.tf`);  // ← FIXED: Using cleanFilename
+    const tfPath = path.join(terraformDir, 'main.tf');
     
     const logs = [
       { type: 'stdout', message: '🚀 Starting Terraform apply...\n', timestamp: new Date() },
-      { type: 'stdout', message: `📁 Working directory: ${terraformDir}\n`, timestamp: new Date() },
-      { type: 'stdout', message: `📝 Using file: ${cleanFilename}.tf\n`, timestamp: new Date() }  // ← FIXED: Added this line
+      { type: 'stdout', message: `📁 Working directory: ${terraformDir}\n`, timestamp: new Date() }
     ];
     
+    // Clean directory - remove all .tf files to avoid duplicates
     try {
       const files = await fs.readdir(terraformDir);
       const tfFiles = files.filter(f => f.endsWith('.tf'));
@@ -733,7 +651,9 @@ router.post('/terraform-apply', auth, async (req, res) => {
         await fs.unlink(path.join(terraformDir, file));
         logs.push({ type: 'stdout', message: `🗑️  Removed old file: ${file}\n`, timestamp: new Date() });
       }
-    } catch (err) {}
+    } catch (err) {
+      // Directory might not exist yet, ignore
+    }
     
     await fs.writeFile(tfPath, content);
     logs.push({ type: 'stdout', message: `📝 Configuration saved to: ${tfPath}\n`, timestamp: new Date() });
@@ -741,6 +661,7 @@ router.post('/terraform-apply', auth, async (req, res) => {
     
     logger.info(`Terraform config saved to ${tfPath}`);
     
+    // Run terraform init
     logs.push({ type: 'stdout', message: '🔧 Running terraform init...\n', timestamp: new Date() });
     const initResult = await executeWithLogs('terraform init', terraformDir);
     logs.push(...initResult.logs);
@@ -750,13 +671,13 @@ router.post('/terraform-apply', auth, async (req, res) => {
       return res.json({
         success: false,
         logs,
-        message: 'Terraform init failed',
-        filePath: `~/Generator/${req.user._id}/terraform/${cleanFilename}.tf`  // ← FIXED: Using cleanFilename
+        message: 'Terraform init failed'
       });
     }
     
     logs.push({ type: 'stdout', message: '\n✓ Terraform init completed\n', timestamp: new Date() });
     
+    // Run terraform apply with auto-approve
     logs.push({ type: 'stdout', message: '\n🚀 Running terraform apply -auto-approve...\n', timestamp: new Date() });
     logs.push({ type: 'stdout', message: '⚠️  This will create/modify/destroy real infrastructure!\n', timestamp: new Date() });
     
@@ -766,13 +687,13 @@ router.post('/terraform-apply', auth, async (req, res) => {
     if (applyResult.success) {
       logs.push({ type: 'stdout', message: '\n✓ Terraform apply completed successfully\n', timestamp: new Date() });
       logs.push({ type: 'stdout', message: '🎉 Infrastructure has been provisioned!\n', timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `\n📂 Configuration available at: ~/Generator/${req.user._id}/terraform/${cleanFilename}.tf\n`, timestamp: new Date() });  // ← FIXED: Using cleanFilename
+      logs.push({ type: 'stdout', message: `\n📂 Configuration available at: ~/Generator/terraform/main.tf\n`, timestamp: new Date() });
       
       res.json({
         success: true,
         logs,
         message: 'Infrastructure deployed successfully!',
-        filePath: `~/Generator/${req.user._id}/terraform/${cleanFilename}.tf`  // ← FIXED: Using cleanFilename
+        filePath: `~/Generator/terraform/main.tf`
       });
     } else {
       logs.push({ type: 'stderr', message: '\n❌ Terraform apply failed\n', timestamp: new Date() });
@@ -781,7 +702,7 @@ router.post('/terraform-apply', auth, async (req, res) => {
         success: false,
         logs,
         message: 'Terraform apply failed. Check logs for details.',
-        filePath: `~/Generator/${req.user._id}/terraform/${cleanFilename}.tf`  // ← FIXED: Using cleanFilename
+        filePath: `~/Generator/terraform/main.tf`
       });
     }
     
@@ -795,126 +716,78 @@ router.post('/terraform-apply', auth, async (req, res) => {
   }
 });
 
-// Get Terraform resources from state - NEW!
-router.get('/terraform/resources', auth, async (req, res) => {
+// Terraform Apply
+router.post('/terraform-apply', auth, async (req, res) => {
   try {
-    const userDir = path.join(GENERATOR_BASE_PATH, req.user._id.toString());
-    const terraformDir = path.join(userDir, 'terraform');
-    const stateFilePath = path.join(terraformDir, 'terraform.tfstate');
+    const { content } = req.body;
     
-    try {
-      await fs.access(stateFilePath);
-    } catch (error) {
-      return res.json({ 
-        success: true,
-        resources: [],
-        groupedResources: [],
-        totalCount: 0,
-        message: 'No Terraform state file found'
+    const terraformDir = path.join(GENERATOR_BASE_PATH, 'terraform');
+    await ensureDir(terraformDir);
+    
+    const tfPath = path.join(terraformDir, 'main.tf');
+    
+    const logs = [
+      { type: 'stdout', message: '🚀 Starting Terraform apply...\n', timestamp: new Date() },
+      { type: 'stdout', message: `📁 Creating directory: ${terraformDir}\n`, timestamp: new Date() }
+    ];
+    
+    await fs.writeFile(tfPath, content);
+    logs.push({ type: 'stdout', message: `📝 Configuration saved to: ${tfPath}\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `✓ File written successfully\n\n`, timestamp: new Date() });
+    
+    logger.info(`Terraform config saved to ${tfPath}`);
+    
+    // Run terraform init
+    logs.push({ type: 'stdout', message: '🔧 Running terraform init...\n', timestamp: new Date() });
+    const initResult = await executeWithLogs('terraform init', terraformDir);
+    logs.push(...initResult.logs);
+    
+    if (!initResult.success) {
+      logs.push({ type: 'stderr', message: '\n❌ Terraform init failed\n', timestamp: new Date() });
+      return res.json({
+        success: false,
+        logs,
+        message: 'Terraform init failed'
       });
     }
     
-    const stateContent = await fs.readFile(stateFilePath, 'utf8');
-    const state = JSON.parse(stateContent);
+    logs.push({ type: 'stdout', message: '\n✓ Terraform init completed\n', timestamp: new Date() });
     
-    const resources = [];
+    // Run terraform apply with auto-approve
+    logs.push({ type: 'stdout', message: '\n🚀 Running terraform apply -auto-approve...\n', timestamp: new Date() });
+    logs.push({ type: 'stdout', message: '⚠️  This will create/modify/destroy real infrastructure!\n', timestamp: new Date() });
     
-    if (state.resources && Array.isArray(state.resources)) {
-      for (const resource of state.resources) {
-        const resourceType = resource.type;
-        const resourceName = resource.name;
-        const mode = resource.mode;
-        
-        if (resource.instances && Array.isArray(resource.instances)) {
-          for (const instance of resource.instances) {
-            const attributes = instance.attributes || {};
-            
-            let resourceId = attributes.id || attributes.arn || attributes.name || 'N/A';
-            const isActive = true;
-            const dependencies = instance.dependencies || [];
-            const resourceGroup = resourceType.split('_')[0];
-            
-            resources.push({
-              type: resourceType,
-              name: resourceName,
-              id: resourceId,
-              isActive: isActive,
-              mode: mode,
-              dependencies: dependencies,
-              group: resourceGroup,
-              fullName: `${resourceType}.${resourceName}`,
-              attributes: {
-                id: resourceId,
-                ...(attributes.tags && { tags: attributes.tags }),
-                ...(attributes.name && { name: attributes.name }),
-                ...(attributes.region && { region: attributes.region }),
-                ...(attributes.zone && { zone: attributes.zone })
-              }
-            });
-          }
-        }
-      }
-    }
+    const applyResult = await executeWithLogs('terraform apply -auto-approve', terraformDir);
+    logs.push(...applyResult.logs);
     
-    const groupedResources = groupResourcesByRelationship(resources);
-    
-    res.json({
-      success: true,
-      resources: resources,
-      groupedResources: groupedResources,
-      totalCount: resources.length
-    });
-    
-  } catch (error) {
-    logger.error('Error getting Terraform resources:', error);
-    res.status(500).json({ 
-      success: false,
-      error: error.message 
-    });
-  }
-});
-
-// Destroy specific Terraform resource - NEW!
-router.post('/terraform/destroy-resource', auth, async (req, res) => {
-  try {
-    const { resourceAddress } = req.body;
-    
-    const userDir = path.join(GENERATOR_BASE_PATH, req.user._id.toString());
-    const terraformDir = path.join(userDir, 'terraform');
-    
-    const logs = [
-      { type: 'stdout', message: `🗑️  Destroying resource: ${resourceAddress}...\n`, timestamp: new Date() }
-    ];
-    
-    const destroyResult = await executeWithLogs(
-      `terraform destroy -target="${resourceAddress}" -auto-approve`, 
-      terraformDir
-    );
-    logs.push(...destroyResult.logs);
-    
-    if (destroyResult.success) {
-      logs.push({ type: 'stdout', message: `\n✓ Resource destroyed: ${resourceAddress}\n`, timestamp: new Date() });
+    if (applyResult.success) {
+      logs.push({ type: 'stdout', message: '\n✓ Terraform apply completed successfully\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '🎉 Infrastructure has been provisioned!\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n📂 Configuration available at: ~/Generator/terraform/main.tf\n`, timestamp: new Date() });
       
       res.json({
         success: true,
         logs,
-        message: `Resource ${resourceAddress} destroyed successfully`
+        message: 'Infrastructure deployed successfully!',
+        filePath: `~/Generator/terraform/main.tf`
       });
     } else {
-      logs.push({ type: 'stderr', message: `\n❌ Failed to destroy resource\n`, timestamp: new Date() });
+      logs.push({ type: 'stderr', message: '\n❌ Terraform apply failed\n', timestamp: new Date() });
       
       res.json({
         success: false,
         logs,
-        message: 'Resource destruction failed'
+        message: 'Terraform apply failed. Check logs for details.',
+        filePath: `~/Generator/terraform/main.tf`
       });
     }
     
   } catch (error) {
-    logger.error('Terraform destroy error:', error);
+    logger.error('Terraform apply error:', error);
     res.status(500).json({ 
       success: false,
-      error: error.message 
+      error: error.message,
+      logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }]
     });
   }
 });
@@ -923,8 +796,7 @@ router.post('/terraform/destroy-resource', auth, async (req, res) => {
 router.post('/kubernetes', auth, async (req, res) => {
   try {
     const { content } = req.body;
-    const userDir = path.join(GENERATOR_BASE_PATH, req.user._id.toString());
-    const k8sDir = path.join(userDir, 'kubernetes');
+    const k8sDir = path.join(GENERATOR_BASE_PATH, 'kubernetes');
     await ensureDir(k8sDir);
     const manifestPath = path.join(k8sDir, 'deployment.yaml');
     
@@ -945,10 +817,10 @@ router.post('/kubernetes', auth, async (req, res) => {
     if (result.success) {
       logs.push({ type: 'stdout', message: '\n✓ Validated\n', timestamp: new Date() });
       logs.push({ type: 'stdout', message: `\n🎉 Done!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 ~/Generator/${req.user._id}/kubernetes/deployment.yaml\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/kubernetes/deployment.yaml\n`, timestamp: new Date() });
     } else {
       logs.push({ type: 'stdout', message: `\n🎉 Deployed!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 ~/Generator/${req.user._id}/kubernetes/deployment.yaml\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/kubernetes/deployment.yaml\n`, timestamp: new Date() });
       logs.push({ type: 'stdout', message: `\n⚠ Validation failed\n`, timestamp: new Date() });
     }
     
@@ -956,7 +828,7 @@ router.post('/kubernetes', auth, async (req, res) => {
       success: true,
       logs,
       message: result.success ? 'K8s deployed!' : 'Deployed (validation skipped)',
-      filePath: `~/Generator/${req.user._id}/kubernetes/deployment.yaml`
+      filePath: `~/Generator/kubernetes/deployment.yaml`
     });
   } catch (error) {
     logger.error('K8s error:', error);
@@ -968,8 +840,7 @@ router.post('/kubernetes', auth, async (req, res) => {
 router.post('/helm', auth, async (req, res) => {
   try {
     const { content } = req.body;
-    const userDir = path.join(GENERATOR_BASE_PATH, req.user._id.toString());
-    const helmDir = path.join(userDir, 'helm');
+    const helmDir = path.join(GENERATOR_BASE_PATH, 'helm');
     const chartDir = path.join(helmDir, 'mychart');
     await ensureDir(chartDir);
     
@@ -1000,10 +871,10 @@ router.post('/helm', auth, async (req, res) => {
     if (result.success) {
       logs.push({ type: 'stdout', message: '\n✓ Lint passed\n', timestamp: new Date() });
       logs.push({ type: 'stdout', message: `\n🎉 Done!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 ~/Generator/${req.user._id}/helm/mychart/\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/helm/mychart/\n`, timestamp: new Date() });
     } else {
       logs.push({ type: 'stdout', message: `\n🎉 Deployed!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 ~/Generator/${req.user._id}/helm/mychart/\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/helm/mychart/\n`, timestamp: new Date() });
       logs.push({ type: 'stdout', message: `\n⚠ Lint failed\n`, timestamp: new Date() });
     }
     
@@ -1011,7 +882,7 @@ router.post('/helm', auth, async (req, res) => {
       success: true,
       logs,
       message: result.success ? 'Helm deployed!' : 'Deployed (linting skipped)',
-      filePath: `~/Generator/${req.user._id}/helm/mychart/`
+      filePath: `~/Generator/helm/mychart/`
     });
   } catch (error) {
     logger.error('Helm error:', error);
@@ -1023,8 +894,7 @@ router.post('/helm', auth, async (req, res) => {
 router.post('/argocd', auth, async (req, res) => {
   try {
     const { content } = req.body;
-    const userDir = path.join(GENERATOR_BASE_PATH, req.user._id.toString());
-    const argocdDir = path.join(userDir, 'argocd');
+    const argocdDir = path.join(GENERATOR_BASE_PATH, 'argocd');
     await ensureDir(argocdDir);
     const manifestPath = path.join(argocdDir, 'application.yaml');
     
@@ -1045,10 +915,10 @@ router.post('/argocd', auth, async (req, res) => {
     if (result.success) {
       logs.push({ type: 'stdout', message: '\n✓ Validated\n', timestamp: new Date() });
       logs.push({ type: 'stdout', message: `\n🎉 Done!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 ~/Generator/${req.user._id}/argocd/application.yaml\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/argocd/application.yaml\n`, timestamp: new Date() });
     } else {
       logs.push({ type: 'stdout', message: `\n🎉 Deployed!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 ~/Generator/${req.user._id}/argocd/application.yaml\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/argocd/application.yaml\n`, timestamp: new Date() });
       logs.push({ type: 'stdout', message: `\n⚠ Validation failed\n`, timestamp: new Date() });
     }
     
@@ -1056,7 +926,7 @@ router.post('/argocd', auth, async (req, res) => {
       success: true,
       logs,
       message: result.success ? 'ArgoCD deployed!' : 'Deployed (validation skipped)',
-      filePath: `~/Generator/${req.user._id}/argocd/application.yaml`
+      filePath: `~/Generator/argocd/application.yaml`
     });
   } catch (error) {
     logger.error('ArgoCD error:', error);
@@ -1068,8 +938,7 @@ router.post('/argocd', auth, async (req, res) => {
 router.post('/jenkins', auth, async (req, res) => {
   try {
     const { content } = req.body;
-    const userDir = path.join(GENERATOR_BASE_PATH, req.user._id.toString());
-    const jenkinsDir = path.join(userDir, 'jenkins');
+    const jenkinsDir = path.join(GENERATOR_BASE_PATH, 'jenkins');
     await ensureDir(jenkinsDir);
     const jenkinsfilePath = path.join(jenkinsDir, 'Jenkinsfile');
     
@@ -1112,13 +981,13 @@ router.post('/jenkins', auth, async (req, res) => {
     }
     
     logs.push({ type: 'stdout', message: `\n🎉 Done!\n`, timestamp: new Date() });
-    logs.push({ type: 'stdout', message: `📂 ~/Generator/${req.user._id}/jenkins/Jenkinsfile\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `📂 ~/Generator/jenkins/Jenkinsfile\n`, timestamp: new Date() });
     
     res.json({
       success: true,
       logs,
       message: success ? 'Jenkinsfile deployed!' : 'Deployed (warnings)',
-      filePath: `~/Generator/${req.user._id}/jenkins/Jenkinsfile`
+      filePath: `~/Generator/jenkins/Jenkinsfile`
     });
   } catch (error) {
     logger.error('Jenkins error:', error);

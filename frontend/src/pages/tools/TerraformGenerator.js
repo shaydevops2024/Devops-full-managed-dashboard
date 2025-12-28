@@ -357,7 +357,9 @@ function TerraformGenerator() {
   const [pendingProvider, setPendingProvider] = useState(null);
   const [showProviderConfirm, setShowProviderConfirm] = useState(false);
   const [showFilenamePopup, setShowFilenamePopup] = useState(false);
-  const [filename, setFilename] = useState('main');
+  const [filename, setFilename] = useState('main');  // ← YOU WERE MISSING THIS LINE!
+  const [showApplyFilenamePopup, setShowApplyFilenamePopup] = useState(false);
+  const [applyFilename, setApplyFilename] = useState('main');
   const [collapsedCategories, setCollapsedCategories] = useState({});
   const [copied, setCopied] = useState(false);
   const [pathCopied, setPathCopied] = useState(false);
@@ -376,6 +378,8 @@ function TerraformGenerator() {
   ]);
 
   const [terraformBlocks, setTerraformBlocks] = useState(PROVIDER_INITIAL_BLOCKS.aws);
+
+
 
   const TERRAFORM_FOLDER_PATH = '~/Generator/terraform';
 
@@ -637,26 +641,41 @@ function TerraformGenerator() {
   };
 
   const handleApply = async () => {
-    if (!window.confirm('Are you sure you want to apply this Terraform configuration? This will create/modify real infrastructure!')) {
+    // Show filename popup first
+    setShowApplyFilenamePopup(true);
+  };
+
+  const confirmApply = async () => {
+    if (!applyFilename || !applyFilename.trim()) {
+      toast.error('Please enter a filename!');
       return;
     }
 
+    if (!window.confirm('Are you sure you want to apply this Terraform configuration? This will create/modify real infrastructure!')) {
+      setShowApplyFilenamePopup(false);
+      return;
+    }
+
+    const cleanFilename = applyFilename.trim().replace(/\.tf$/, '');
+    
+    setShowApplyFilenamePopup(false);
     setApplying(true);
     setShowLogsPopup(true);
     setDeployLogs([]);
     setDeploySuccess(null);
-    addToLog('Running terraform apply...');
+    addToLog(`Running terraform apply for ${cleanFilename}.tf...`);
 
     try {
       const response = await api.post('/deploy/terraform-apply', {
-        content: generateTerraformConfig()
+        content: generateTerraformConfig(),
+        filename: cleanFilename
       });
 
       setDeployLogs(response.data.logs || []);
       setDeploySuccess(response.data.success);
 
       if (response.data.success) {
-        addToLog('Terraform apply completed');
+        addToLog(`Terraform apply completed: ${cleanFilename}.tf`);
         toast.success('Infrastructure deployed!');
       } else {
         addToLog('Terraform apply failed');
@@ -1110,6 +1129,78 @@ function TerraformGenerator() {
                 }}
               >
                 Deploy & Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Apply Filename Input Popup */}
+      {showApplyFilenamePopup && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
+          <div style={{ background: '#16213e', border: '3px solid #e94560', borderRadius: '12px', padding: '2rem', maxWidth: '500px', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+            <h3 style={{ margin: '0 0 1.5rem 0', color: '#e94560', fontSize: '1.5rem' }}>Apply Terraform Configuration</h3>
+            
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', color: '#ddd', fontSize: '0.9rem' }}>
+                Filename (without .tf extension)
+              </label>
+              <input
+                type="text"
+                value={applyFilename}
+                onChange={(e) => setApplyFilename(e.target.value)}
+                placeholder="main"
+                autoFocus
+                onKeyPress={(e) => e.key === 'Enter' && confirmApply()}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  background: '#8b1a2e',
+                  border: '2px solid #e94560',
+                  borderRadius: '6px',
+                  color: '#fff',
+                  fontSize: '1rem',
+                  outline: 'none'
+                }}
+              />
+              <p style={{ margin: '0.5rem 0 0 0', color: '#aaa', fontSize: '0.85rem' }}>
+                File will be created/updated as: <strong style={{ color: '#4ecca3' }}>{applyFilename || 'main'}.tf</strong>
+              </p>
+              <p style={{ margin: '0.5rem 0 0 0', color: '#ffa726', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                ⚠️ This will provision REAL infrastructure!
+              </p>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowApplyFilenamePopup(false)}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  background: '#666',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '1rem'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmApply}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  background: '#e94560',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '1rem'
+                }}
+              >
+                Apply Configuration
               </button>
             </div>
           </div>
