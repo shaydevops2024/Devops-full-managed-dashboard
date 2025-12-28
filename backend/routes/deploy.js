@@ -1,4 +1,4 @@
-// backend/routes/deploy.js - COMPLETE WITH FIXED VALIDATION
+// backend/routes/deploy.js - COMPLETE WITH TERRAFORM FILENAME SUPPORT
 
 const express = require('express');
 const router = express.Router();
@@ -483,13 +483,16 @@ router.post('/docker', auth, async (req, res) => {
   }
 });
 
-// Deploy Terraform
+// Deploy Terraform (UPDATED WITH FILENAME SUPPORT)
 router.post('/terraform', auth, async (req, res) => {
   try {
-    const { content } = req.body;
+    const { content, filename = 'main' } = req.body; // Accept filename parameter
     const terraformDir = path.join(GENERATOR_BASE_PATH, 'terraform');
     await ensureDir(terraformDir);
-    const tfPath = path.join(terraformDir, 'main.tf');
+    
+    // Use provided filename (without .tf extension if included)
+    const cleanFilename = filename.trim().replace(/\.tf$/, '');
+    const tfPath = path.join(terraformDir, `${cleanFilename}.tf`);
     
     const logs = [
       { type: 'stdout', message: '🚀 Terraform deployment...\n', timestamp: new Date() },
@@ -515,30 +518,279 @@ router.post('/terraform', auth, async (req, res) => {
       if (validateResult.success) {
         logs.push({ type: 'stdout', message: '\n✓ Validated\n', timestamp: new Date() });
         logs.push({ type: 'stdout', message: `\n🎉 Done!\n`, timestamp: new Date() });
-        logs.push({ type: 'stdout', message: `📂 ~/Generator/terraform/main.tf\n`, timestamp: new Date() });
+        logs.push({ type: 'stdout', message: `📂 ~/Generator/terraform/${cleanFilename}.tf\n`, timestamp: new Date() });
       }
       
       res.json({
         success: validateResult.success,
         logs,
         message: validateResult.success ? 'Terraform deployed!' : 'Validation failed',
-        filePath: `~/Generator/terraform/main.tf`
+        filePath: `~/Generator/terraform/${cleanFilename}.tf`
       });
     } else {
       logs.push({ type: 'stdout', message: `\n🎉 Deployed!\n`, timestamp: new Date() });
-      logs.push({ type: 'stdout', message: `📂 ~/Generator/terraform/main.tf\n`, timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `📂 ~/Generator/terraform/${cleanFilename}.tf\n`, timestamp: new Date() });
       logs.push({ type: 'stdout', message: `\n⚠ Init failed\n`, timestamp: new Date() });
       
       res.json({
         success: true,
         logs,
         message: 'Terraform deployed (validation skipped)',
-        filePath: `~/Generator/terraform/main.tf`
+        filePath: `~/Generator/terraform/${cleanFilename}.tf`
       });
     }
   } catch (error) {
     logger.error('Terraform error:', error);
     res.status(500).json({ success: false, error: error.message, logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }] });
+  }
+});
+
+// Terraform Plan
+router.post('/terraform-plan', auth, async (req, res) => {
+  try {
+    const { content } = req.body;
+    
+    const terraformDir = path.join(GENERATOR_BASE_PATH, 'terraform');
+    await ensureDir(terraformDir);
+    
+    const tfPath = path.join(terraformDir, 'main.tf');
+    
+    const logs = [
+      { type: 'stdout', message: '🚀 Starting Terraform plan...\n', timestamp: new Date() },
+      { type: 'stdout', message: `📁 Working directory: ${terraformDir}\n`, timestamp: new Date() }
+    ];
+    
+    // Clean directory - remove all .tf files to avoid duplicates
+    try {
+      const files = await fs.readdir(terraformDir);
+      const tfFiles = files.filter(f => f.endsWith('.tf'));
+      for (const file of tfFiles) {
+        await fs.unlink(path.join(terraformDir, file));
+        logs.push({ type: 'stdout', message: `🗑️  Removed old file: ${file}\n`, timestamp: new Date() });
+      }
+    } catch (err) {
+      // Directory might not exist yet, ignore
+    }
+    
+    await fs.writeFile(tfPath, content);
+    logs.push({ type: 'stdout', message: `📝 Configuration saved to: ${tfPath}\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `✓ File written successfully\n\n`, timestamp: new Date() });
+    
+    logger.info(`Terraform config saved to ${tfPath}`);
+    
+    // Run terraform init
+    logs.push({ type: 'stdout', message: '🔧 Running terraform init...\n', timestamp: new Date() });
+    const initResult = await executeWithLogs('terraform init', terraformDir);
+    logs.push(...initResult.logs);
+    
+    if (!initResult.success) {
+      logs.push({ type: 'stderr', message: '\n❌ Terraform init failed\n', timestamp: new Date() });
+      return res.json({
+        success: false,
+        logs,
+        message: 'Terraform init failed'
+      });
+    }
+    
+    logs.push({ type: 'stdout', message: '\n✓ Terraform init completed\n', timestamp: new Date() });
+    
+    // Run terraform plan
+    logs.push({ type: 'stdout', message: '\n📊 Running terraform plan...\n', timestamp: new Date() });
+    const planResult = await executeWithLogs('terraform plan', terraformDir);
+    logs.push(...planResult.logs);
+    
+    if (planResult.success) {
+      logs.push({ type: 'stdout', message: '\n✓ Terraform plan completed successfully\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n📂 Configuration available at: ~/Generator/terraform/main.tf\n`, timestamp: new Date() });
+      
+      res.json({
+        success: true,
+        logs,
+        message: 'Terraform plan completed successfully!',
+        filePath: `~/Generator/terraform/main.tf`
+      });
+    } else {
+      logs.push({ type: 'stderr', message: '\n❌ Terraform plan failed\n', timestamp: new Date() });
+      
+      res.json({
+        success: false,
+        logs,
+        message: 'Terraform plan failed. Check logs for details.',
+        filePath: `~/Generator/terraform/main.tf`
+      });
+    }
+    
+  } catch (error) {
+    logger.error('Terraform plan error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message,
+      logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }]
+    });
+  }
+});
+
+// Terraform Apply (FIXED - Cleans directory first)
+router.post('/terraform-apply', auth, async (req, res) => {
+  try {
+    const { content } = req.body;
+    
+    const terraformDir = path.join(GENERATOR_BASE_PATH, 'terraform');
+    await ensureDir(terraformDir);
+    
+    const tfPath = path.join(terraformDir, 'main.tf');
+    
+    const logs = [
+      { type: 'stdout', message: '🚀 Starting Terraform apply...\n', timestamp: new Date() },
+      { type: 'stdout', message: `📁 Working directory: ${terraformDir}\n`, timestamp: new Date() }
+    ];
+    
+    // Clean directory - remove all .tf files to avoid duplicates
+    try {
+      const files = await fs.readdir(terraformDir);
+      const tfFiles = files.filter(f => f.endsWith('.tf'));
+      for (const file of tfFiles) {
+        await fs.unlink(path.join(terraformDir, file));
+        logs.push({ type: 'stdout', message: `🗑️  Removed old file: ${file}\n`, timestamp: new Date() });
+      }
+    } catch (err) {
+      // Directory might not exist yet, ignore
+    }
+    
+    await fs.writeFile(tfPath, content);
+    logs.push({ type: 'stdout', message: `📝 Configuration saved to: ${tfPath}\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `✓ File written successfully\n\n`, timestamp: new Date() });
+    
+    logger.info(`Terraform config saved to ${tfPath}`);
+    
+    // Run terraform init
+    logs.push({ type: 'stdout', message: '🔧 Running terraform init...\n', timestamp: new Date() });
+    const initResult = await executeWithLogs('terraform init', terraformDir);
+    logs.push(...initResult.logs);
+    
+    if (!initResult.success) {
+      logs.push({ type: 'stderr', message: '\n❌ Terraform init failed\n', timestamp: new Date() });
+      return res.json({
+        success: false,
+        logs,
+        message: 'Terraform init failed'
+      });
+    }
+    
+    logs.push({ type: 'stdout', message: '\n✓ Terraform init completed\n', timestamp: new Date() });
+    
+    // Run terraform apply with auto-approve
+    logs.push({ type: 'stdout', message: '\n🚀 Running terraform apply -auto-approve...\n', timestamp: new Date() });
+    logs.push({ type: 'stdout', message: '⚠️  This will create/modify/destroy real infrastructure!\n', timestamp: new Date() });
+    
+    const applyResult = await executeWithLogs('terraform apply -auto-approve', terraformDir);
+    logs.push(...applyResult.logs);
+    
+    if (applyResult.success) {
+      logs.push({ type: 'stdout', message: '\n✓ Terraform apply completed successfully\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '🎉 Infrastructure has been provisioned!\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n📂 Configuration available at: ~/Generator/terraform/main.tf\n`, timestamp: new Date() });
+      
+      res.json({
+        success: true,
+        logs,
+        message: 'Infrastructure deployed successfully!',
+        filePath: `~/Generator/terraform/main.tf`
+      });
+    } else {
+      logs.push({ type: 'stderr', message: '\n❌ Terraform apply failed\n', timestamp: new Date() });
+      
+      res.json({
+        success: false,
+        logs,
+        message: 'Terraform apply failed. Check logs for details.',
+        filePath: `~/Generator/terraform/main.tf`
+      });
+    }
+    
+  } catch (error) {
+    logger.error('Terraform apply error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message,
+      logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }]
+    });
+  }
+});
+
+// Terraform Apply
+router.post('/terraform-apply', auth, async (req, res) => {
+  try {
+    const { content } = req.body;
+    
+    const terraformDir = path.join(GENERATOR_BASE_PATH, 'terraform');
+    await ensureDir(terraformDir);
+    
+    const tfPath = path.join(terraformDir, 'main.tf');
+    
+    const logs = [
+      { type: 'stdout', message: '🚀 Starting Terraform apply...\n', timestamp: new Date() },
+      { type: 'stdout', message: `📁 Creating directory: ${terraformDir}\n`, timestamp: new Date() }
+    ];
+    
+    await fs.writeFile(tfPath, content);
+    logs.push({ type: 'stdout', message: `📝 Configuration saved to: ${tfPath}\n`, timestamp: new Date() });
+    logs.push({ type: 'stdout', message: `✓ File written successfully\n\n`, timestamp: new Date() });
+    
+    logger.info(`Terraform config saved to ${tfPath}`);
+    
+    // Run terraform init
+    logs.push({ type: 'stdout', message: '🔧 Running terraform init...\n', timestamp: new Date() });
+    const initResult = await executeWithLogs('terraform init', terraformDir);
+    logs.push(...initResult.logs);
+    
+    if (!initResult.success) {
+      logs.push({ type: 'stderr', message: '\n❌ Terraform init failed\n', timestamp: new Date() });
+      return res.json({
+        success: false,
+        logs,
+        message: 'Terraform init failed'
+      });
+    }
+    
+    logs.push({ type: 'stdout', message: '\n✓ Terraform init completed\n', timestamp: new Date() });
+    
+    // Run terraform apply with auto-approve
+    logs.push({ type: 'stdout', message: '\n🚀 Running terraform apply -auto-approve...\n', timestamp: new Date() });
+    logs.push({ type: 'stdout', message: '⚠️  This will create/modify/destroy real infrastructure!\n', timestamp: new Date() });
+    
+    const applyResult = await executeWithLogs('terraform apply -auto-approve', terraformDir);
+    logs.push(...applyResult.logs);
+    
+    if (applyResult.success) {
+      logs.push({ type: 'stdout', message: '\n✓ Terraform apply completed successfully\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: '🎉 Infrastructure has been provisioned!\n', timestamp: new Date() });
+      logs.push({ type: 'stdout', message: `\n📂 Configuration available at: ~/Generator/terraform/main.tf\n`, timestamp: new Date() });
+      
+      res.json({
+        success: true,
+        logs,
+        message: 'Infrastructure deployed successfully!',
+        filePath: `~/Generator/terraform/main.tf`
+      });
+    } else {
+      logs.push({ type: 'stderr', message: '\n❌ Terraform apply failed\n', timestamp: new Date() });
+      
+      res.json({
+        success: false,
+        logs,
+        message: 'Terraform apply failed. Check logs for details.',
+        filePath: `~/Generator/terraform/main.tf`
+      });
+    }
+    
+  } catch (error) {
+    logger.error('Terraform apply error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: error.message,
+      logs: [{ type: 'stderr', message: `Error: ${error.message}\n`, timestamp: new Date() }]
+    });
   }
 });
 

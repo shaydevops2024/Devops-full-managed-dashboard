@@ -60,6 +60,12 @@ services:
 
       - GENERATOR_BASE_PATH=/generator
 
+      # AWS Credentials (will use from host)
+
+      - AWS_CONFIG_FILE=/root/.aws/config
+
+      - AWS_SHARED_CREDENTIALS_FILE=/root/.aws/credentials
+
     volumes:
 
       - ./backend/uploads:/app/uploads
@@ -75,6 +81,10 @@ services:
       - /snap/bin:/host/snap/bin:ro
 
       - ${HOME}/Generator:/generator
+
+      # Mount AWS credentials from host
+
+      - ${HOME}/.aws:/root/.aws:ro
 
     depends_on:
 
