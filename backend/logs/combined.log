@@ -733,3 +733,6 @@
 {"level":"info","message":"Found argocd at /host/usr/local/bin/argocd","timestamp":"2025-12-29T08:35:26.252Z"}
 {"level":"info","message":"Got version for argocd from /host/usr/local/bin/argocd: argocd: v3.0.11+240a183","timestamp":"2025-12-29T08:35:26.747Z"}
 {"level":"info","message":"Tool check result: argocd - Installed: true, Version: argocd: v3.0.11+240a183","timestamp":"2025-12-29T08:35:26.747Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-29T08:53:28.212Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-29T08:53:28.215Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-29T08:53:28.240Z"}
