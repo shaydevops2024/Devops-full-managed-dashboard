@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { dockerAPI, toolsAPI, getLogsUrl } from '../services/api';
+import { dockerAPI, toolsAPI, deployAPI, getLogsUrl } from '../services/api';
 import { 
   Play, 
   Square, 
@@ -19,7 +19,9 @@ import {
   Maximize2,
   Minimize2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Trash2,
+  Layers
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -38,6 +40,8 @@ function Dashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [containers, setContainers] = useState([]);
+  const [terraformResources, setTerraformResources] = useState([]);
+  const [terraformGroups, setTerraformGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toolsStatus, setToolsStatus] = useState({});
   const [checkingTools, setCheckingTools] = useState({});
@@ -46,12 +50,15 @@ function Dashboard() {
   const [actionInProgress, setActionInProgress] = useState({});
   const [hoveredDelete, setHoveredDelete] = useState(null);
   const [deletingContainer, setDeletingContainer] = useState(null);
+  const [destroyingResource, setDestroyingResource] = useState(null);
   const [expandedTool, setExpandedTool] = useState(null);
 
   useEffect(() => {
     loadContainers();
+    loadTerraformResources();
     const interval = setInterval(() => {
       loadContainers();
+      loadTerraformResources();
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -70,9 +77,24 @@ function Dashboard() {
     }
   };
 
+  const loadTerraformResources = async () => {
+    try {
+      const response = await deployAPI.getTerraformResources();
+      if (response.data && response.data.success) {
+        setTerraformResources(response.data.resources || []);
+        setTerraformGroups(response.data.groupedResources || []);
+      }
+    } catch (error) {
+      console.log('Terraform resources not available:', error.message);
+      setTerraformResources([]);
+      setTerraformGroups([]);
+    }
+  };
+
   const handleRefresh = () => {
     setRefreshing(true);
     loadContainers();
+    loadTerraformResources();
   };
 
   const handleStart = async (container) => {
@@ -148,6 +170,32 @@ function Dashboard() {
       toast.error(`Failed to delete container: ${error.response?.data?.error || error.message}`);
     } finally {
       setDeletingContainer(null);
+    }
+  };
+
+  const handleDestroyResource = async (resource) => {
+    if (!window.confirm(`Are you sure you want to destroy resource "${resource.fullName}"?\n\nType: ${resource.type}\nID: ${resource.id}`)) {
+      return;
+    }
+
+    setDestroyingResource(resource.fullName);
+    
+    try {
+      const response = await deployAPI.destroyTerraformResource(resource.fullName);
+      
+      if (response.data.success) {
+        toast.success(`Destroyed ${resource.fullName}`);
+        setTimeout(() => {
+          loadTerraformResources();
+        }, 2000);
+      } else {
+        toast.error(response.data.error || 'Failed to destroy resource');
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.error || error.message;
+      toast.error(`Failed to destroy ${resource.fullName}: ${errorMsg}`);
+    } finally {
+      setDestroyingResource(null);
     }
   };
 
@@ -292,6 +340,9 @@ function Dashboard() {
   const getToolContainers = (toolName) => {
     if (toolName === 'docker') {
       return containers;
+    }
+    if (toolName === 'terraform') {
+      return terraformGroups;
     }
     return [];
   };
@@ -505,6 +556,281 @@ function Dashboard() {
     );
   };
 
+  const renderTerraformResourceCard = (resource, isExpanded) => {
+    const isDestroying = destroyingResource === resource.fullName;
+
+    return (
+      <div 
+        key={resource.fullName}
+        style={{ 
+          background: '#16213e', 
+          padding: '1.5rem', 
+          borderRadius: '8px',
+          border: `2px solid ${resource.isActive ? '#4ecca3' : '#666'}`,
+          transition: 'transform 0.2s, box-shadow 0.2s',
+          minWidth: isExpanded ? 'auto' : '300px',
+          maxWidth: isExpanded ? 'auto' : '300px',
+          position: 'relative',
+          flexShrink: 0
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = 'none';
+        }}
+      >
+        <button
+          onClick={() => handleDestroyResource(resource)}
+          disabled={isDestroying}
+          style={{
+            position: 'absolute',
+            top: '0.75rem',
+            right: '0.75rem',
+            background: '#e94560',
+            border: 'none',
+            borderRadius: '6px',
+            width: '32px',
+            height: '32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: isDestroying ? 'wait' : 'pointer',
+            opacity: isDestroying ? 0.5 : 1,
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(233, 69, 96, 0.4)',
+            zIndex: 10
+          }}
+          title="Destroy resource"
+        >
+          <Trash2 size={18} color="#fff" />
+        </button>
+
+        <div style={{ marginBottom: '1rem', paddingRight: '2.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <div style={{
+              width: '12px',
+              height: '12px',
+              borderRadius: '50%',
+              background: resource.isActive ? '#4ecca3' : '#e74c3c',
+              flexShrink: 0
+            }} />
+            <h3 style={{ 
+              margin: 0, 
+              fontSize: '1rem',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              color: '#4ecca3'
+            }}>{resource.name}</h3>
+          </div>
+          
+          <div style={{ 
+            margin: '0.75rem 0',
+            padding: '0.75rem',
+            background: '#0f3460',
+            borderRadius: '6px',
+            border: '1px solid #4ecca3'
+          }}>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <span style={{ 
+                fontSize: '0.75rem', 
+                color: '#888',
+                textTransform: 'uppercase',
+                fontWeight: 'bold'
+              }}>Resource Type</span>
+              <p style={{ 
+                margin: '0.25rem 0 0 0', 
+                fontSize: '0.85rem', 
+                color: '#fff',
+                fontFamily: 'monospace'
+              }}>
+                {resource.type}
+              </p>
+            </div>
+            
+            <div>
+              <span style={{ 
+                fontSize: '0.75rem', 
+                color: '#888',
+                textTransform: 'uppercase',
+                fontWeight: 'bold'
+              }}>Resource ID</span>
+              <p style={{ 
+                margin: '0.25rem 0 0 0', 
+                fontSize: '0.85rem', 
+                color: '#4ecca3',
+                fontFamily: 'monospace',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }} title={resource.id}>
+                {resource.id}
+              </p>
+            </div>
+          </div>
+
+          {resource.attributes && resource.attributes.tags && (
+            <div style={{ 
+              marginTop: '0.5rem',
+              fontSize: '0.75rem',
+              color: '#aaa'
+            }}>
+              <strong>Tags:</strong> {Object.keys(resource.attributes.tags).length}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderTerraformGroup = (group, isExpanded) => {
+    if (group.resources.length === 1) {
+      return renderTerraformResourceCard(group.resources[0], isExpanded);
+    }
+
+    return (
+      <div 
+        key={group.id}
+        style={{ 
+          background: '#0f3460', 
+          padding: '1.5rem', 
+          borderRadius: '8px',
+          border: `2px solid #4ecca3`,
+          transition: 'transform 0.2s, box-shadow 0.2s',
+          minWidth: isExpanded ? 'auto' : '400px',
+          maxWidth: isExpanded ? 'auto' : '400px',
+          flexShrink: 0
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = 'none';
+        }}
+      >
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.5rem',
+          marginBottom: '1rem',
+          paddingBottom: '0.75rem',
+          borderBottom: '1px solid #4ecca3'
+        }}>
+          <Layers size={20} color="#4ecca3" />
+          <h3 style={{ 
+            margin: 0, 
+            fontSize: '1.1rem',
+            color: '#4ecca3'
+          }}>
+            Related Resources ({group.resources.length})
+          </h3>
+        </div>
+
+        <div style={{ 
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem'
+        }}>
+          {group.resources.map(resource => (
+            <div 
+              key={resource.fullName}
+              style={{ 
+                background: '#16213e', 
+                padding: '1rem', 
+                borderRadius: '6px',
+                border: `1px solid ${resource.isActive ? '#4ecca3' : '#666'}`,
+                position: 'relative'
+              }}
+            >
+              <button
+                onClick={() => handleDestroyResource(resource)}
+                disabled={destroyingResource === resource.fullName}
+                style={{
+                  position: 'absolute',
+                  top: '0.5rem',
+                  right: '0.5rem',
+                  background: '#e94560',
+                  border: 'none',
+                  borderRadius: '4px',
+                  width: '28px',
+                  height: '28px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: destroyingResource === resource.fullName ? 'wait' : 'pointer',
+                  opacity: destroyingResource === resource.fullName ? 0.5 : 1,
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(233, 69, 96, 0.4)',
+                  zIndex: 10
+                }}
+                title="Destroy resource"
+              >
+                <Trash2 size={14} color="#fff" />
+              </button>
+
+              <div style={{ paddingRight: '2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <div style={{
+                    width: '10px',
+                    height: '10px',
+                    borderRadius: '50%',
+                    background: resource.isActive ? '#4ecca3' : '#e74c3c',
+                    flexShrink: 0
+                  }} />
+                  <h4 style={{ 
+                    margin: 0, 
+                    fontSize: '0.95rem',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    color: '#4ecca3'
+                  }}>{resource.name}</h4>
+                </div>
+                
+                <div style={{ marginTop: '0.5rem' }}>
+                  <div style={{ marginBottom: '0.25rem' }}>
+                    <span style={{ 
+                      fontSize: '0.7rem', 
+                      color: '#888',
+                      textTransform: 'uppercase'
+                    }}>Type: </span>
+                    <span style={{ 
+                      fontSize: '0.8rem', 
+                      color: '#fff',
+                      fontFamily: 'monospace'
+                    }}>
+                      {resource.type}
+                    </span>
+                  </div>
+                  
+                  <div>
+                    <span style={{ 
+                      fontSize: '0.7rem', 
+                      color: '#888',
+                      textTransform: 'uppercase'
+                    }}>ID: </span>
+                    <span style={{ 
+                      fontSize: '0.8rem', 
+                      color: '#4ecca3',
+                      fontFamily: 'monospace'
+                    }} title={resource.id}>
+                      {resource.id}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const renderToolRow = (tool) => {
     const toolContainers = getToolContainers(tool.name);
     const isExpanded = expandedTool === tool.name;
@@ -619,7 +945,8 @@ function Dashboard() {
               scrollBehavior: 'smooth'
             }}
           >
-            {toolContainers.map(container => renderContainerCard(container, isExpanded))}
+            {tool.name === 'docker' && toolContainers.map(container => renderContainerCard(container, isExpanded))}
+            {tool.name === 'terraform' && toolContainers.map(group => renderTerraformGroup(group, isExpanded))}
           </div>
         ) : (
           <div style={{
@@ -630,10 +957,12 @@ function Dashboard() {
             border: '2px dashed #333'
           }}>
             <p style={{ color: '#aaa', fontSize: '1rem' }}>
-              No {tool.displayName} services found
+              No {tool.displayName} {tool.name === 'terraform' ? 'resources' : 'services'} found
             </p>
             <p style={{ color: '#666', fontSize: '0.85rem' }}>
-              Services will appear here when available
+              {tool.name === 'terraform' 
+                ? 'Resources will appear here after terraform apply' 
+                : 'Services will appear here when available'}
             </p>
           </div>
         )}

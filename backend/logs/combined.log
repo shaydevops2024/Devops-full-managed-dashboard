@@ -673,3 +673,63 @@
 {"level":"info","message":"Terraform config saved to /generator/694fb017d76029aaec41de33/terraform/main.tf","timestamp":"2025-12-28T17:05:23.285Z"}
 {"level":"info","message":"Executing: terraform init in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T17:05:23.286Z"}
 {"level":"info","message":"Executing: terraform apply -auto-approve in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-28T17:05:29.082Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-29T05:31:23.726Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-29T05:31:23.730Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-29T05:31:24.279Z"}
+{"level":"info","message":"Executing: terraform destroy -target=\"aws_instance.example\" -auto-approve in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-29T05:31:42.109Z"}
+{"level":"info","message":"Terraform config saved to /generator/694fb017d76029aaec41de33/terraform/main.tf","timestamp":"2025-12-29T05:40:35.015Z"}
+{"level":"info","message":"Executing: terraform init in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-29T05:40:35.016Z"}
+{"level":"info","message":"Executing: terraform apply -auto-approve in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-29T05:40:37.259Z"}
+{"level":"info","message":"Checking tool: docker","timestamp":"2025-12-29T06:05:08.697Z"}
+{"level":"info","message":"Tool check result: docker - Installed: true, Version: 28.0.1","timestamp":"2025-12-29T06:05:08.744Z"}
+{"level":"info","message":"Checking tool: terraform","timestamp":"2025-12-29T06:05:09.868Z"}
+{"level":"info","message":"Found terraform at /host/usr/bin/terraform","timestamp":"2025-12-29T06:05:09.871Z"}
+{"level":"info","message":"Got version for terraform from /host/usr/bin/terraform: Terraform v1.12.2","timestamp":"2025-12-29T06:05:10.012Z"}
+{"level":"info","message":"Tool check result: terraform - Installed: true, Version: Terraform v1.12.2","timestamp":"2025-12-29T06:05:10.012Z"}
+{"level":"info","message":"Checking tool: kubectl","timestamp":"2025-12-29T06:05:10.714Z"}
+{"level":"info","message":"Found minikube at /host/usr/local/bin/minikube, using for kubectl","timestamp":"2025-12-29T06:05:10.715Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: ENOENT: no such file or directory, access '/host/snap/bin/minikube'","timestamp":"2025-12-29T06:05:10.716Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: Command failed: /host/usr/local/bin/minikube version --short 2>&1\n","timestamp":"2025-12-29T06:05:10.727Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: ENOENT: no such file or directory, access '/host/usr/bin/minikube'","timestamp":"2025-12-29T06:05:10.728Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: ENOENT: no such file or directory, access '/host/bin/minikube'","timestamp":"2025-12-29T06:05:10.729Z"}
+{"level":"info","message":"Tool check result: kubectl - Installed: true, Version: null","timestamp":"2025-12-29T06:05:10.729Z"}
+{"level":"info","message":"Checking tool: helm","timestamp":"2025-12-29T06:05:11.498Z"}
+{"level":"info","message":"Found helm at /host/usr/local/bin/helm","timestamp":"2025-12-29T06:05:11.499Z"}
+{"level":"info","message":"Got version for helm from /host/usr/local/bin/helm: v3.17.1+g980d8ac","timestamp":"2025-12-29T06:05:11.954Z"}
+{"level":"info","message":"Tool check result: helm - Installed: true, Version: v3.17.1+g980d8ac","timestamp":"2025-12-29T06:05:11.955Z"}
+{"level":"info","message":"Checking tool: argocd","timestamp":"2025-12-29T06:05:12.442Z"}
+{"level":"info","message":"Found argocd at /host/usr/local/bin/argocd","timestamp":"2025-12-29T06:05:12.443Z"}
+{"level":"info","message":"Got version for argocd from /host/usr/local/bin/argocd: argocd: v3.0.11+240a183","timestamp":"2025-12-29T06:05:12.999Z"}
+{"level":"info","message":"Tool check result: argocd - Installed: true, Version: argocd: v3.0.11+240a183","timestamp":"2025-12-29T06:05:12.999Z"}
+{"level":"info","message":"Checking tool: jenkins","timestamp":"2025-12-29T06:05:13.933Z"}
+{"level":"warn","message":"jenkins not found in any standard path","timestamp":"2025-12-29T06:05:13.934Z"}
+{"level":"info","message":"Tool check result: jenkins - Installed: false, Version: null","timestamp":"2025-12-29T06:05:13.934Z"}
+{"level":"info","message":"Executing: terraform destroy -target=\"aws_instance.example\" -auto-approve in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-29T06:05:21.443Z"}
+{"level":"info","message":"Terraform config saved to /generator/694fb017d76029aaec41de33/terraform/main.tf","timestamp":"2025-12-29T06:07:52.075Z"}
+{"level":"info","message":"Executing: terraform init in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-29T06:07:52.076Z"}
+{"level":"info","message":"Executing: terraform apply -auto-approve in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-29T06:07:53.535Z"}
+{"level":"info","message":"Executing: terraform destroy -target=\"aws_instance.Shay-Test\" -auto-approve in /generator/694fb017d76029aaec41de33/terraform","timestamp":"2025-12-29T06:08:39.167Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-12-29T08:34:32.505Z"}
+{"level":"info","message":"Server accessible at http://0.0.0.0:5000","timestamp":"2025-12-29T08:34:32.507Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-12-29T08:34:33.044Z"}
+{"level":"info","message":"Checking tool: docker","timestamp":"2025-12-29T08:35:19.575Z"}
+{"level":"info","message":"Tool check result: docker - Installed: true, Version: 28.0.1","timestamp":"2025-12-29T08:35:19.596Z"}
+{"level":"info","message":"Checking tool: terraform","timestamp":"2025-12-29T08:35:21.755Z"}
+{"level":"info","message":"Found terraform at /host/usr/bin/terraform","timestamp":"2025-12-29T08:35:21.756Z"}
+{"level":"info","message":"Got version for terraform from /host/usr/bin/terraform: Terraform v1.12.2","timestamp":"2025-12-29T08:35:23.219Z"}
+{"level":"info","message":"Tool check result: terraform - Installed: true, Version: Terraform v1.12.2","timestamp":"2025-12-29T08:35:23.219Z"}
+{"level":"info","message":"Checking tool: kubectl","timestamp":"2025-12-29T08:35:24.662Z"}
+{"level":"info","message":"Found minikube at /host/usr/local/bin/minikube, using for kubectl","timestamp":"2025-12-29T08:35:24.663Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: ENOENT: no such file or directory, access '/host/snap/bin/minikube'","timestamp":"2025-12-29T08:35:24.664Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: Command failed: /host/usr/local/bin/minikube version --short 2>&1\n","timestamp":"2025-12-29T08:35:24.670Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: ENOENT: no such file or directory, access '/host/usr/bin/minikube'","timestamp":"2025-12-29T08:35:24.671Z"}
+{"level":"warn","message":"Error getting minikube kubectl version: ENOENT: no such file or directory, access '/host/bin/minikube'","timestamp":"2025-12-29T08:35:24.672Z"}
+{"level":"info","message":"Tool check result: kubectl - Installed: true, Version: null","timestamp":"2025-12-29T08:35:24.672Z"}
+{"level":"info","message":"Checking tool: helm","timestamp":"2025-12-29T08:35:25.481Z"}
+{"level":"info","message":"Found helm at /host/usr/local/bin/helm","timestamp":"2025-12-29T08:35:25.483Z"}
+{"level":"info","message":"Got version for helm from /host/usr/local/bin/helm: v3.17.1+g980d8ac","timestamp":"2025-12-29T08:35:25.909Z"}
+{"level":"info","message":"Tool check result: helm - Installed: true, Version: v3.17.1+g980d8ac","timestamp":"2025-12-29T08:35:25.909Z"}
+{"level":"info","message":"Checking tool: argocd","timestamp":"2025-12-29T08:35:26.251Z"}
+{"level":"info","message":"Found argocd at /host/usr/local/bin/argocd","timestamp":"2025-12-29T08:35:26.252Z"}
+{"level":"info","message":"Got version for argocd from /host/usr/local/bin/argocd: argocd: v3.0.11+240a183","timestamp":"2025-12-29T08:35:26.747Z"}
+{"level":"info","message":"Tool check result: argocd - Installed: true, Version: argocd: v3.0.11+240a183","timestamp":"2025-12-29T08:35:26.747Z"}
